@@ -15,6 +15,7 @@ import os
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.0/howto/deployment/checklist/
@@ -25,7 +26,7 @@ SECRET_KEY = '6#pyk03^gpsvy7^in4p4n(2w#v6p017wr7g*(5k7j8)5c1p68g'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['127.0.0.1','crmtest.pagekite.me']
 
 
 # Application definition
@@ -73,13 +74,23 @@ TEMPLATES = [
 WSGI_APPLICATION = 'crm.wsgi.application'
 
 
+CACHES ={
+    'default': {
+        'SECURE_SSL_REDIRECT' : True,
+    }
+}
+
 # Database
 # https://docs.djangoproject.com/en/2.0/ref/settings/#databases
 
 DATABASES = {
 'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'crm',
+        'USER': 'user2',
+        'PASSWORD': 'password',
+        'HOST': 'localhost',
+        #'PORT': '',
     }
 }
 
@@ -130,3 +141,4 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.0/howto/static-files/
 
 STATIC_URL = '/static/'
+
