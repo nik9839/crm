@@ -1,5 +1,7 @@
 from django.contrib.postgres.fields import ArrayField, JSONField
 from django.db import models
+from datetime import datetime, tzinfo
+from django.utils import timezone
 
 # Create your models here.
 
@@ -29,6 +31,7 @@ class Resources(models.Model):
     floorName = models.IntegerField(blank=True)
     resourceDumpdata = JSONField(default={})
     events = models.ManyToManyField(Events, blank=True)
+    resourceCreated = models.DateTimeField(default=timezone.now, blank=True)
 
 
 

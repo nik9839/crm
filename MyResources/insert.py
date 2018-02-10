@@ -6,7 +6,7 @@ from MyResources.models import Events, Resources
 def insertEvent(resource_email,eventobject):
 
 
-    # calculate time_diff between end_time and start_time into time_taken field 
+    # calculate time_diff between end_time and start_time into time_taken field
     attendees_list = []
 
     for i in range(len( eventobject['attendees'])):

@@ -12,10 +12,13 @@ from MyResources.fetch import *
 
 @api_view(['GET', 'POST'])
 def notify(request):
-    uuid = request._request.META['HTTP_X_GOOG_CHANNEL_ID']
-    resource_email = Resources.objects.get(resourceUUID=uuid).resourceEmail
-    test_api_request(resource_email)
-    return HttpResponse('data inserted')
+    try:
+        uuid = request._request.META['HTTP_X_GOOG_CHANNEL_ID']
+        resource_email = Resources.objects.get(resourceUUID=uuid).resourceEmail
+        test_api_request(resource_email)
+        return HttpResponse('data inserted')
+    except Exception:
+        print("exception occured")
 
 class AddResource(APIView):
     def post(self,request,format=None):
@@ -33,9 +36,6 @@ class OverallStats(APIView):
 class RoomStats(APIView):
     def get(self,request,format=None):
         return Response(room_wise_stats())
-
-
-
 
 
 
