@@ -9,12 +9,14 @@ urlpatterns = [
     path('watch', views.notify),
     path('test1',views.test),
     path('oauth2callback', fetchCalenderData.oauth2callback),
-    path('test', fetchCalenderData.test_api_request),
+    #path('test', fetchCalenderData.test_api_request),
     path('authorize', fetchCalenderData.authorize),
-    path('revoke', fetchCalenderData.revoke),
-    path('clear', fetchCalenderData.clear_credentials),
+    #path('revoke', fetchCalenderData.revoke),
+    #path('clear', fetchCalenderData.clear_credentials),
     path('overallstats',views.OverallStats.as_view()),
-    path('roomstats',views.RoomStats.as_view())
+    path('roomstats',views.RoomStats.as_view()),
+    path('getMeetings',views.Meetings.as_view()),
+    path('getMeetings2', views.getMeetings2)
 
 ]
 

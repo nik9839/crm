@@ -1,11 +1,12 @@
+from django.shortcuts import render
+from rest_framework.decorators import renderer_classes
+from rest_framework.renderers import JSONRenderer
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from MyResources.insert import insertEvent,insertResource
-from MyResources.models import Resources
-from django.http import HttpResponse
+from MyResources.insert import insertResource
 from MyResources.fetchCalenderData import *
-import requests
 from MyResources.fetch import *
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 # Create your views here.
 
@@ -18,10 +19,11 @@ def notify(request):
         test_api_request(resource_email)
         return HttpResponse('data inserted')
     except Exception:
-        print("exception occured")
+        print("exception occurred")
+
 
 class AddResource(APIView):
-    def post(self,request,format=None):
+    def post(self, request):
         insertResource(self,request.data)
         return Response("data entered")
 
@@ -29,15 +31,31 @@ class AddResource(APIView):
 def test(request):
     return HttpResponse(print_index_table())
 
+
 class OverallStats(APIView):
-    def get(self,request,format=None):
+    def get(self, request):
         return Response(overallStatsFunction())
 
+
 class RoomStats(APIView):
-    def get(self,request,format=None):
+    def get(self,request):
         return Response(room_wise_stats())
 
 
+class Meetings(APIView):
+    def post(self, request):
+        return Response(getMeetings(request.data['items']))
+
+
+@api_view(['GET'])
+@renderer_classes((JSONRenderer,))
+def getMeetings2(request):
+    meetings = Events.objects.all()
+    paginator = Paginator(meetings, 2)
+    page = request.GET.get('page')
+    meetings_to_show = paginator.get_page(page)
+    return Response(meetings_to_show)
+    #return Response(meetings_to_show)
 
 # class AddEvent(APIView):
 #

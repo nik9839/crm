@@ -9,7 +9,7 @@ def overallStatsFunction():
     stats_dict['total_events'] = Events.objects.count()
     stats_dict['booked_now'] = Events.objects.filter(start_dateTime__gte=utc.localize(datetime.now())).count()
     #the above line code for booked now might not working properly may be due to timeZone Problem utc localize is used to change to common format
-    stats_dict['utilization'] = overallUtilization()
+    stats_dict['utilization'] = round(overallUtilization(),2)
     return stats_dict
 
 
@@ -20,12 +20,13 @@ def room_wise_stats():
 
     for i in range(resource_objects.count()):
         room_dict = dict()
+        room_dict['email'] = resource_objects[i].resourceEmail
         room_dict['name'] = resource_objects[i].generatedResourceName
         room_dict['location'] = resource_objects[i].buildingId
         room_dict['meetings'] = resource_objects[i].events.count()
         room_dict['capacity'] = resource_objects[i].capacity
         room_dict['hours'] = resource_hours(resource_objects[i].events.all())
-        room_dict['utilization']= (room_dict['hours']/resource_present_hours(resource_objects[i]))*100  # problem within the called function
+        room_dict['utilization']= round((room_dict['hours']/resource_present_hours(resource_objects[i]))*100,2)  # problem within the called function
         items.append(room_dict)
 
     room_wise_dict['list'] = items
@@ -36,7 +37,7 @@ def resource_hours(events):
     for event in events:
         diff = event.end_dateTime - event.start_dateTime
         days = diff.days
-        days_to_hours = days * 24
+        days_to_hours = days * 8
         diff_btw_two_times = diff.seconds / 3600
         overall_hours = days_to_hours + diff_btw_two_times
         total_utilized_time = total_utilized_time+overall_hours
@@ -65,3 +66,26 @@ def overallUtilization():
         total_hours_resource_utilized = total_hours_resource_utilized + resource_hours(resource_objects[i].events.all())
 
     return  (total_hours_resource_utilized/total_hours_resources_present)*100
+
+def getMeetings(resources_list):
+    all_meetings_dict ={}
+    items = []
+
+    meetings = Events.objects.filter(resources_used__overlap=resources_list).all()
+    for meeting in meetings:
+        meeting_dict  = dict()
+        meeting_dict['event_id']= meeting.event_id
+        meeting_dict['summary'] = meeting.summary
+        meeting_dict['description'] = meeting.description
+        meeting_dict['created'] = meeting.created
+        meeting_dict['updated'] = meeting.updated
+        meeting_dict['attendees'] = meeting.attendees
+        meeting_dict['resources_used'] = meeting.resources_used
+        meeting_dict['start_dateTime'] = meeting.start_dateTime
+        meeting_dict['end_dateTime'] = meeting.end_dateTime
+        meeting_dict['location'] = meeting.location
+        items.append(meeting_dict)
+
+    all_meetings_dict['items'] = items
+    return all_meetings_dict
+

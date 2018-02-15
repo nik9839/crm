@@ -15,6 +15,7 @@ class Events(models.Model):
     end_dateTime = models.DateTimeField()
     location = models.CharField(max_length=100)
     attendees = ArrayField(models.CharField(max_length=50), blank=True,null= True)
+    resources_used = ArrayField(models.CharField(max_length=100), blank=True, default=[])
     event_dump = JSONField(default={})
 
 
