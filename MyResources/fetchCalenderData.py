@@ -34,7 +34,7 @@ def test_api_request(resource_email):
     service = googleapiclient.discovery.build('calendar', 'v3', credentials=credentials)
     events = service.events().list(calendarId=resource_email,
                                    orderBy='updated').execute()
-    print(len(events['items']))
+    #print(len(events['items']))
     print(events['items'][-1]['summary'])
     data = (events['items'][-1])
     insertEvent(resource_email=resource_email,eventobject=data)

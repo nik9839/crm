@@ -17,7 +17,7 @@ def notify(request):
         uuid = request._request.META['HTTP_X_GOOG_CHANNEL_ID']
         resource_email = Resources.objects.get(resourceUUID=uuid).resourceEmail
         test_api_request(resource_email)
-        return HttpResponse('data inserted')
+        return Response('data inserted')
     except Exception:
         print("exception occurred")
 
@@ -47,15 +47,19 @@ class Meetings(APIView):
         return Response(getMeetings(request.data['items']))
 
 
-@api_view(['GET'])
-@renderer_classes((JSONRenderer,))
-def getMeetings2(request):
-    meetings = Events.objects.all()
-    paginator = Paginator(meetings, 2)
-    page = request.GET.get('page')
-    meetings_to_show = paginator.get_page(page)
-    return Response(meetings_to_show)
-    #return Response(meetings_to_show)
+class RoomMeetings(APIView):
+    def post(self, request):
+     return Response(getMeetingsOfRoomOfaDay(request.data['email_id']))
+
+# @api_view(['GET'])
+# @renderer_classes((JSONRenderer,))
+# def getMeetings2(request):
+#     meetings = Events.objects.all()
+#     paginator = Paginator(meetings, 2)
+#     page = request.GET.get('page')
+#     meetings_to_show = paginator.get_page(page)
+#     return Response(meetings_to_show)
+#     #return Response(meetings_to_show)
 
 # class AddEvent(APIView):
 #
