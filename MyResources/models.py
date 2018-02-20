@@ -33,6 +33,8 @@ class Resources(models.Model):
     resourceDumpdata = JSONField(default={})
     events = models.ManyToManyField(Events, blank=True)
     resourceCreated = models.DateTimeField(default=timezone.now, blank=True)
+    roomName = models.CharField(max_length=30,blank=True)
+    roomPassword = models.CharField(max_length=20,blank=True)
 
 
 

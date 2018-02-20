@@ -16,7 +16,7 @@ def overallStatsFunction():
 
 def room_wise_stats():
     room_wise_dict = {}
-    items=[]
+    items = []
     resource_objects = Resources.objects.all()
 
     for i in range(resource_objects.count()):
@@ -27,8 +27,9 @@ def room_wise_stats():
         room_dict['meetings'] = resource_objects[i].events.count()
         room_dict['capacity'] = resource_objects[i].capacity
         room_dict['hours'] = resource_hours(resource_objects[i].events.all())
-        a=resource_present_hours(resource_objects[i])
-        room_dict['utilization']= round((room_dict['hours']/resource_present_hours(resource_objects[i]))*100,2)  # problem within the called function
+        a = resource_present_hours(resource_objects[i])
+        room_dict['utilization'] = round((room_dict['hours'] / resource_present_hours(resource_objects[i])) * 100,
+                                         2)  # problem within the called function
         items.append(room_dict)
 
     room_wise_dict['list'] = items
@@ -43,7 +44,7 @@ def resource_hours(events):
         days_to_hours = days * 8
         diff_btw_two_times = diff.seconds / 3600
         overall_hours = days_to_hours + diff_btw_two_times
-        total_utilized_time = total_utilized_time+overall_hours
+        total_utilized_time = total_utilized_time + overall_hours
 
     return total_utilized_time
 
@@ -51,7 +52,7 @@ def resource_hours(events):
 def resource_present_hours(resource):
     created = resource.resourceCreated
     now = utc.localize(datetime.now())
-    diff = now-created  # problem in calculating diff due to conflicting timeZone offsets
+    diff = now - created  # problem in calculating diff due to conflicting timeZone offsets
     days = diff.days
     days_to_hours = days * 8  # assuming 8 workings hours a day
     diff_btw_two_times = diff.seconds / 3600
@@ -61,25 +62,25 @@ def resource_present_hours(resource):
 
 
 def overallUtilization():
-    total_hours_resources_present =0
-    total_hours_resource_utilized =0
+    total_hours_resources_present = 0
+    total_hours_resource_utilized = 0
     resource_objects = Resources.objects.all()
 
     for i in range(resource_objects.count()):
         total_hours_resources_present = total_hours_resources_present + resource_present_hours(resource_objects[i])
         total_hours_resource_utilized = total_hours_resource_utilized + resource_hours(resource_objects[i].events.all())
 
-    return (total_hours_resource_utilized/total_hours_resources_present)*100
+    return (total_hours_resource_utilized / total_hours_resources_present) * 100
 
 
 def getMeetings(resources_list):
-    all_meetings_dict ={}
+    all_meetings_dict = {}
     items = []
 
     meetings = Events.objects.filter(resources_used__overlap=resources_list).all()
     for meeting in meetings:
-        meeting_dict  = dict()
-        meeting_dict['event_id']= meeting.event_id
+        meeting_dict = dict()
+        meeting_dict['event_id'] = meeting.event_id
         meeting_dict['summary'] = meeting.summary
         meeting_dict['description'] = meeting.description
         meeting_dict['created'] = meeting.created
@@ -99,7 +100,8 @@ def getMeetingsOfRoomOfaDay(resource_email):
     today = datetime.now().date()
     tomorrow = today + timedelta(1)
     today_end = datetime.combine(tomorrow, time())
-    meetings = Resources.objects.get(resourceEmail=resource_email).events.filter(start_dateTime__gte=utc.localize(datetime.now())).filter(start_dateTime__lte=utc.localize(today_end))
+    meetings = Resources.objects.get(resourceEmail=resource_email).events.filter(
+        end_dateTime__gte=utc.localize(datetime.now())).filter(start_dateTime__lte=utc.localize(today_end)).order_by('start_dateTime')
 
     meetings_dict = {}
     items = []
@@ -120,3 +122,17 @@ def getMeetingsOfRoomOfaDay(resource_email):
 
     meetings_dict['items'] = items
     return meetings_dict
+
+
+def checkCredentials(data):
+    response = dict()
+    response['credentialsValid'] = False
+    if Resources.objects.filter(roomName=data['username']).exists():
+        if Resources.objects.get(roomName=data['username']).roomPassword == data['password']:
+            response['credentialsValid'] = True
+            response['token'] = Resources.objects.get(roomName=data['username']).resourceEmail
+        else:
+            response['message'] = "password doesn't match"
+    else:
+        response['message'] = "room doesn't exist"
+    return response

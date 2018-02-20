@@ -51,6 +51,12 @@ class RoomMeetings(APIView):
     def post(self, request):
      return Response(getMeetingsOfRoomOfaDay(request.data['email_id']))
 
+
+class CheckLogin(APIView):
+    def post(self,request):
+        return Response(checkCredentials(request.data))
+
+
 # @api_view(['GET'])
 # @renderer_classes((JSONRenderer,))
 # def getMeetings2(request):

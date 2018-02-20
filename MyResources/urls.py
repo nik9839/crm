@@ -13,7 +13,8 @@ urlpatterns = [
     path('overallstats',views.OverallStats.as_view()),
     path('roomstats',views.RoomStats.as_view()),
     path('getMeetings',views.Meetings.as_view()),
-    path('gettodaysMeetingsofroom', views.RoomMeetings.as_view())
+    path('gettodaysMeetingsofroom', views.RoomMeetings.as_view()),
+    path('login', views.CheckLogin.as_view())
 
 ]
 
