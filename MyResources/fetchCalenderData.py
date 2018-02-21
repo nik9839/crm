@@ -7,8 +7,7 @@ import googleapiclient.discovery
 from django.http import HttpResponse
 from django.shortcuts import redirect
 from rest_framework.decorators import api_view
-from MyResources.insert import insertEvent
-
+from MyResources.insert import insertEvent, deleteEvent
 
 from django.contrib.sessions.backends.db import SessionStore
 
@@ -33,11 +32,14 @@ def test_api_request(resource_email):
 
     service = googleapiclient.discovery.build('calendar', 'v3', credentials=credentials)
     events = service.events().list(calendarId=resource_email,
-                                   orderBy='updated').execute()
+                                   orderBy='updated',showDeleted=True).execute()
     #print(len(events['items']))
     print(events['items'][-1]['summary'])
     data = (events['items'][-1])
-    insertEvent(resource_email=resource_email,eventobject=data)
+    if data["status"] == "cancelled":
+        deleteEvent(eventobject=data)
+    else:
+        insertEvent(resource_email=resource_email, eventobject=data)
     # Save credentials back to session in case access token was refreshed.
     # ACTION ITEM: In a production app, you likely want to save these
     #              credentials in a persistent database instead.

@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from rest_framework.decorators import renderer_classes
 from rest_framework.renderers import JSONRenderer
+from rest_framework.status import HTTP_200_OK
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from MyResources.insert import insertResource
@@ -17,7 +18,7 @@ def notify(request):
         uuid = request._request.META['HTTP_X_GOOG_CHANNEL_ID']
         resource_email = Resources.objects.get(resourceUUID=uuid).resourceEmail
         test_api_request(resource_email)
-        return Response('data inserted')
+        return Response('data inserted', status=HTTP_200_OK)
     except Exception:
         print("exception occurred")
 
