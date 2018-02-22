@@ -32,7 +32,6 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 
 INSTALLED_APPS = [
-    'corsheaders',
     'rest_framework',
     'MyResources.apps.MyresourcesConfig',
     'django.contrib.admin',
@@ -44,7 +43,6 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -92,7 +90,7 @@ DATABASES = {
         'NAME': 'crm',
         'USER': 'user2',
         'PASSWORD': 'password',
-        'HOST': 'localhost',
+        'HOST': '172.17.0.1',
         #'PORT': '',
     }
 }

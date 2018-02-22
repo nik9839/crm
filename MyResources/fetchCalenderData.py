@@ -13,6 +13,7 @@ from django.contrib.sessions.backends.db import SessionStore
 
 session = SessionStore()
 
+#change this for building docker image
 CLIENT_SECRETS_FILE = "/home/nikhil/Downloads/client_secret.json"
 
 
@@ -23,23 +24,29 @@ API_VERSION = 'v3'
 def callbackauthorized():
     return HttpResponse('authorized')
 
-def test_api_request(resource_email):
+
+def get_data_from_calender(resource_email):
+    print("inside get function")
     if 'credentials' not in session:
         return authorize('ok')
 
     # Load credentials from the session.
     credentials = google.oauth2.credentials.Credentials(**session['credentials'])
+    try:
+        service = googleapiclient.discovery.build('calendar', 'v3', credentials=credentials)
+        print('-------')
+        events = service.events().list(calendarId=resource_email,
+                                       orderBy='updated',showDeleted=True).execute()
+        print('data received')
+        print(events['items'][-1]['summary'])
+        data = (events['items'][-1])
+        if data["status"] == "cancelled":
+            deleteEvent(eventobject=data)
+        else:
+            insertEvent(resource_email=resource_email, eventobject=data)
+    except Exception as e:
+        print(e)
 
-    service = googleapiclient.discovery.build('calendar', 'v3', credentials=credentials)
-    events = service.events().list(calendarId=resource_email,
-                                   orderBy='updated',showDeleted=True).execute()
-    #print(len(events['items']))
-    print(events['items'][-1]['summary'])
-    data = (events['items'][-1])
-    if data["status"] == "cancelled":
-        deleteEvent(eventobject=data)
-    else:
-        insertEvent(resource_email=resource_email, eventobject=data)
     # Save credentials back to session in case access token was refreshed.
     # ACTION ITEM: In a production app, you likely want to save these
     #              credentials in a persistent database instead.

@@ -136,3 +136,21 @@ def checkCredentials(data):
     else:
         response['message'] = "room doesn't exist"
     return response
+
+
+def room_details():
+    rooms_dictionary = dict()
+    items =[]
+
+    rooms = Resources.objects.all()
+
+    for i in range(len(rooms)):
+        room_dictionary = dict()
+        room_dictionary['name'] = rooms[i].roomName
+        room_dictionary['password'] = rooms[i].roomPassword
+        room_dictionary['capacity'] = rooms[i].capacity
+        items.append(room_dictionary)
+
+    rooms_dictionary['items']= items
+
+    return rooms_dictionary
