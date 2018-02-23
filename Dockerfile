@@ -13,7 +13,7 @@ WORKDIR /usr/src/app
 COPY ./requirements /usr/src/app/requirements
 RUN pip install -r requirements/requirements.txt
 
-#COPY client_secret.json /usr/src/app/
+COPY client_secret.json /usr/src/app/
 COPY . /usr/src/app
 
 EXPOSE 8000

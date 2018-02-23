@@ -3,6 +3,15 @@ import uuid
 from MyResources.models import Events, Resources
 
 def insertEvent(resource_email,eventobject):
+
+    if Events.objects.filter(event_id=eventobject['id']).exists():
+        obj = Events.objects.get(event_id=eventobject['id'])
+        resources_present_list = obj.resources_used
+        for j in range(len(resources_present_list)):
+            resource = Resources.objects.get(resourceEmail=resources_present_list[j])
+            resource.events.remove(obj)
+        Events.objects.filter(event_id=eventobject['id']).delete()
+
     attendees_list = []
     resources_used_list = []
 
@@ -18,13 +27,6 @@ def insertEvent(resource_email,eventobject):
                    end_dateTime=eventobject['end']['dateTime'], location=eventobject['location'],
                    event_dump=eventobject, attendees=attendees_list, resources_used=resources_used_list)
 
-    if Events.objects.filter(event_id=eventobject['id']).exists():
-        obj = Events.objects.get(event_id=eventobject['id'])
-        for j in range(len(resources_used_list)):
-            resource = Resources.objects.get(resourceEmail=resources_used_list[j])
-            resource.events.remove(obj)
-        Events.objects.filter(event_id=eventobject['id']).delete()
-
     event.save()
     for j in range(len(resources_used_list)):
         resource = Resources.objects.get(resourceEmail=resources_used_list[j])
@@ -32,12 +34,9 @@ def insertEvent(resource_email,eventobject):
         resource.save()
 
 
-def deleteEvent(eventobject):
+def deleteEvent2(eventobject):
     if Events.objects.filter(event_id=eventobject['id']).exists():
-        resources_used_list = []
-        for i in range(len(eventobject['attendees'])):
-            if eventobject['attendees'][i].get('resource'):
-                resources_used_list.append(eventobject['attendees'][i]['email'])
+        resources_used_list = Events.objects.get(event_id=eventobject['id']).resources_used
 
         obj = Events.objects.get(event_id=eventobject['id'])
 
@@ -46,6 +45,7 @@ def deleteEvent(eventobject):
             resource.events.remove(obj)
 
         Events.objects.filter(event_id=eventobject['id']).delete()
+
 
 def insertResource(self,resourceObject):
 

@@ -7,52 +7,44 @@ import googleapiclient.discovery
 from django.http import HttpResponse
 from django.shortcuts import redirect
 from rest_framework.decorators import api_view
-from MyResources.insert import insertEvent, deleteEvent
+from MyResources.insert import *
 
 from django.contrib.sessions.backends.db import SessionStore
 
+from MyResources.models import Resources
+
 session = SessionStore()
 
-#change this for building docker image
+# change this for building docker image
 CLIENT_SECRETS_FILE = "/home/nikhil/Downloads/client_secret.json"
-
 
 SCOPES = ['https://www.googleapis.com/auth/calendar']
 API_SERVICE_NAME = 'calender'
 API_VERSION = 'v3'
 
+
 def callbackauthorized():
     return HttpResponse('authorized')
 
-
-def get_data_from_calender(resource_email):
-    print("inside get function")
-    if 'credentials' not in session:
-        return authorize('ok')
-
-    # Load credentials from the session.
+def get_changes(resource_email):
+    sync_token = Resources.objects.get(resourceEmail=resource_email).syncToken
     credentials = google.oauth2.credentials.Credentials(**session['credentials'])
     try:
         service = googleapiclient.discovery.build('calendar', 'v3', credentials=credentials)
-        print('-------')
         events = service.events().list(calendarId=resource_email,
-                                       orderBy='updated',showDeleted=True).execute()
-        print('data received')
-        print(events['items'][-1]['summary'])
-        data = (events['items'][-1])
-        if data["status"] == "cancelled":
-            deleteEvent(eventobject=data)
-        else:
-            insertEvent(resource_email=resource_email, eventobject=data)
+                                       syncToken=sync_token).execute()
+        for event in events['items']:
+            if event['status'] == "cancelled":
+                deleteEvent2(eventobject=event)
+            else:
+                insertEvent(resource_email=resource_email, eventobject=event)
+
+        resource = Resources.objects.get(resourceEmail=resource_email)
+        resource.syncToken = events['nextSyncToken']
+        resource.save()
     except Exception as e:
         print(e)
 
-    # Save credentials back to session in case access token was refreshed.
-    # ACTION ITEM: In a production app, you likely want to save these
-    #              credentials in a persistent database instead.
-    session['credentials'] = credentials_to_dict(credentials)
-
-    return 'ok'
 
 
 def authorize(request):
@@ -75,13 +67,12 @@ def authorize(request):
 
 
 def oauth2callback(request):
-
     # Specify the state when creating the flow in the callback so that it can
     # verified in the authorization server response.
     state = session['state']
 
     flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(
-      CLIENT_SECRETS_FILE, scopes=SCOPES, state=state)
+        CLIENT_SECRETS_FILE, scopes=SCOPES, state=state)
 
     flow.redirect_uri = 'https://crmtest.pagekite.me/MyResources/oauth2callback'
 
@@ -99,44 +90,19 @@ def oauth2callback(request):
     return callbackauthorized()
 
 
-def revoke():
-  if 'credentials' not in session:
-    return ('You need to <a href="/authorize">authorize</a> before ' +
-            'testing the code to revoke credentials.')
-
-  credentials = google.oauth2.credentials.Credentials(
-    **session['credentials'])
-
-  revoke = requests.post('https://accounts.google.com/o/oauth2/revoke',
-      params={'token': credentials.token},
-      headers = {'content-type': 'application/x-www-form-urlencoded'})
-
-  status_code = getattr(revoke, 'status_code')
-  if status_code == 200:
-    return('Credentials successfully revoked.' + print_index_table())
-  else:
-    return('An error occurred.' + print_index_table())
-
-
-
-def clear_credentials():
-  if 'credentials' in session:
-    del session['credentials']
-  return ('Credentials have been cleared.<br><br>' +
-          print_index_table())
-
 def print_index_table():
-  return ('<table>' +
-          '<tr><td><a href="http://127.0.0.1:8000/MyResources/authorize">Test the auth flow directly</a></td>' +
-          '<td>Go directly to the authorization flow. If there are stored ' +
-          '    credentials, you still might not be prompted to reauthorize ' +
-          '    the application.</td></tr>' +
-          '</table>')
+    return ('<table>' +
+            '<tr><td><a href="http://127.0.0.1:8000/MyResources/authorize">Test the auth flow directly</a></td>' +
+            '<td>Go directly to the authorization flow. If there are stored ' +
+            '    credentials, you still might not be prompted to reauthorize ' +
+            '    the application.</td></tr>' +
+            '</table>')
+
 
 def credentials_to_dict(credentials):
-  return {'token': credentials.token,
-          'refresh_token': credentials.refresh_token,
-          'token_uri': credentials.token_uri,
-          'client_id': credentials.client_id,
-          'client_secret': credentials.client_secret,
-          'scopes': credentials.scopes}
+    return {'token': credentials.token,
+            'refresh_token': credentials.refresh_token,
+            'token_uri': credentials.token_uri,
+            'client_id': credentials.client_id,
+            'client_secret': credentials.client_secret,
+            'scopes': credentials.scopes}

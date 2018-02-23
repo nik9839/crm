@@ -35,6 +35,7 @@ class Resources(models.Model):
     resourceCreated = models.DateTimeField(default=timezone.now, blank=True)
     roomName = models.CharField(max_length=30,blank=True)
     roomPassword = models.CharField(max_length=20,blank=True)
+    syncToken = models.CharField(max_length=30,blank=True)
 
 
 
