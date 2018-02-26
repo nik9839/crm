@@ -50,12 +50,29 @@ def get_changes(resource_email):
         print(e)
 
 
+def register_resource(email):
+    from django.conf import settings
+    try:
+        watch_body ={
+            "id": Resources.objects.get(resourceEmail=email).resourceUUID,
+            "type": "web_hook",
+            "address": getattr(settings, 'GOOGLE_PUSH_NOTIFICATION_CALLBACK_URL', None)
+        }
+        credentials = google.oauth2.credentials.Credentials(**session['credentials'])
+        service = googleapiclient.discovery.build('calendar', 'v3', credentials=credentials)
+        a = service.events().watch(calendarId=email, body=watch_body).execute()
+        print(a)
+    except Exception as e:
+        print(e)
+    return 'ok'
+
 
 def authorize(request):
     flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(
         CLIENT_SECRETS_FILE, scopes=SCOPES)
 
-    flow.redirect_uri = 'https://crmtest.pagekite.me/MyResources/oauth2callback'
+    flow.redirect_uri = '{0}/MyResources/oauth2callback'.format( '{scheme}://{host}'.format(host=request.get_host(),
+                                           scheme=request.META.get('HTTP_X_FORWARDED_PROTO', 'http')))
 
     authorization_url, state = flow.authorization_url(
         # Enable offline access so that you can refresh an access token without
@@ -78,7 +95,8 @@ def oauth2callback(request):
     flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(
         CLIENT_SECRETS_FILE, scopes=SCOPES, state=state)
 
-    flow.redirect_uri = 'https://crmtest.pagekite.me/MyResources/oauth2callback'
+    flow.redirect_uri = '{0}/MyResources/oauth2callback'.format( '{scheme}://{host}'.format(host=request.get_host(),
+                                           scheme=request.META.get('HTTP_X_FORWARDED_PROTO', 'http')))
 
     # Use the authorization server's response to fetch the OAuth 2.0 tokens.
 
@@ -94,9 +112,12 @@ def oauth2callback(request):
     return callbackauthorized()
 
 
-def print_index_table():
+def print_index_table(request):
     return ('<table>' +
-            '<tr><td><a href="http://127.0.0.1:8000/MyResources/authorize">Test the auth flow directly</a></td>' +
+            '<tr><td><a href="{0}/MyResources/authorize">Test the auth flow directly</a></td>'.format(
+                '{scheme}://{host}'.format(host=request.get_host(),
+                                           scheme=request.META.get('HTTP_X_FORWARDED_PROTO', 'http'))
+            ) +
             '<td>Go directly to the authorization flow. If there are stored ' +
             '    credentials, you still might not be prompted to reauthorize ' +
             '    the application.</td></tr>' +
