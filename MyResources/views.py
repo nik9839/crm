@@ -57,8 +57,12 @@ class Meetings(APIView):
 
 class RoomMeetings(APIView):
     def post(self, request):
-        return Response(getMeetingsOfRoomOfaDay(request.data['email_id']), status=HTTP_202_ACCEPTED)
-
+        try:
+            a = jwt.decode(request.data['auth_token'],'secret', algorithm='HS256')
+            resource_email = a['email']
+            return Response(getMeetingsOfRoomOfaDay(resource_email), status=HTTP_202_ACCEPTED)
+        except Exception:
+            return Response('Bad Request', status=HTTP_401_UNAUTHORIZED)
 
 class CheckLogin(APIView):
     def post(self, request):
