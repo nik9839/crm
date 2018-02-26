@@ -1,7 +1,8 @@
+from rest_framework.decorators import api_view
 from rest_framework.status import *
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from MyResources.insert import insertResource
+from MyResources.resources import insertResource
 from MyResources.fetchCalenderData import *
 from MyResources.fetch import *
 

@@ -4,7 +4,7 @@ from MyResources import views, fetchCalenderData
 
 
 urlpatterns = [
-
+    path('addresources',views.AddMutlipleResources.as_view()),
     path('addresource', views.AddResource.as_view()),
     path('watch', views.notify),
     path('test1',views.test),
@@ -14,7 +14,8 @@ urlpatterns = [
     path('roomstats',views.RoomStats.as_view()),
     path('getMeetings',views.Meetings.as_view()),
     path('gettodaysMeetingsofroom', views.RoomMeetings.as_view()),
-    path('login', views.CheckLogin.as_view())
+    path('login', views.CheckLogin.as_view()),
+    path('register', views.RegisterResourceForNotification.as_view())
 
 ]
 
