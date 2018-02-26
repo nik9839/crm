@@ -6,17 +6,16 @@ import google_auth_oauthlib.flow
 import googleapiclient.discovery
 from django.http import HttpResponse
 from django.shortcuts import redirect
-from rest_framework.decorators import api_view
-from MyResources.insert import *
-
-from django.contrib.sessions.backends.db import SessionStore
-
+from django.conf import settings
+from MyResources.event import insertEvent, deleteEvent2
 from MyResources.models import Resources
+from django.contrib.sessions.backends.db import SessionStore
+from datetime import datetime, timezone
 
 session = SessionStore()
 
 # change this for building docker image
-CLIENT_SECRETS_FILE = "/home/nikhil/Downloads/client_secret.json"
+CLIENT_SECRETS_FILE = os.path.join(settings.BASE_DIR, "client_secret.json")
 
 SCOPES = ['https://www.googleapis.com/auth/calendar']
 API_SERVICE_NAME = 'calender'
