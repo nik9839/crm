@@ -22,14 +22,14 @@ def room_wise_stats():
     for i in range(resource_objects.count()):
         room_dict = dict()
         room_dict['email'] = resource_objects[i].resourceEmail
-        room_dict['name'] = resource_objects[i].generatedResourceName
+        room_dict['room_name'] = resource_objects[i].roomName
+        room_dict['calender_name'] = resource_objects[i].generatedResourceName
         room_dict['location'] = resource_objects[i].buildingId
         room_dict['meetings'] = resource_objects[i].events.count()
         room_dict['capacity'] = resource_objects[i].capacity
-        room_dict['hours'] = resource_hours(resource_objects[i].events.all())
-        a = resource_present_hours(resource_objects[i])
-        room_dict['utilization'] = round((room_dict['hours'] / resource_present_hours(resource_objects[i])) * 100,
-                                         2)  # problem within the called function
+        room_dict['hours'] = round(resource_hours(resource_objects[i].events.all()),2)
+        room_dict['utilization'] = str(round((room_dict['hours'] / resource_present_hours(resource_objects[i])) * 100,
+                                         2))+'%'  # problem within the called function
         items.append(room_dict)
 
     room_wise_dict['list'] = items
@@ -100,7 +100,8 @@ def getMeetingsOfRoomOfaDay(resource_email):
     today = datetime.now().date()
     tomorrow = today + timedelta(1)
     today_end = datetime.combine(tomorrow, time())
-    meetings = Resources.objects.get(resourceEmail=resource_email).events.filter(
+    resource_obj =Resources.objects.get(resourceEmail=resource_email)
+    meetings = resource_obj.events.filter(
         end_dateTime__gte=utc.localize(datetime.now())).filter(start_dateTime__lte=utc.localize(today_end)).order_by('start_dateTime')
 
     meetings_dict = {}
@@ -118,6 +119,7 @@ def getMeetingsOfRoomOfaDay(resource_email):
         meeting_dict['start_dateTime'] = meeting.start_dateTime
         meeting_dict['end_dateTime'] = meeting.end_dateTime
         meeting_dict['location'] = meeting.location
+        meeting_dict['creator'] = meeting.creator
         items.append(meeting_dict)
 
     meetings_dict['items'] = items
@@ -126,11 +128,15 @@ def getMeetingsOfRoomOfaDay(resource_email):
 
 def checkCredentials(data):
     response = dict()
-    response['credentialsValid'] = False
-    if Resources.objects.filter(roomName=data['username']).exists():
-        if Resources.objects.get(roomName=data['username']).roomPassword == data['password']:
-            response['credentialsValid'] = True
-            response['token'] = Resources.objects.get(roomName=data['username']).resourceEmail
+    response['credentials_valid'] = False
+    if Resources.objects.filter(roomLoginName=data['username'].lower()).exists():
+        resource = Resources.objects.get(roomLoginName=data['username'].lower())
+        if resource.roomPassword == data['password']:
+            response['credentials_valid'] = True
+            response['capacity'] = resource.capacity
+            response['room_name'] = resource.roomName
+            response['room_url'] = resource.roomUrl
+            response['token'] = jwt.encode({'email': resource.resourceEmail}, 'secret', algorithm='HS256')
         else:
             response['message'] = "password doesn't match"
     else:
@@ -154,3 +160,5 @@ def room_details():
     rooms_dictionary['items']= items
 
     return rooms_dictionary
+
+#def generate_autn_token():
