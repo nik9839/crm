@@ -25,16 +25,21 @@ API_VERSION = 'v3'
 def callbackauthorized():
     return HttpResponse('authorized')
 
+
 def get_changes(resource_email):
-    sync_token = Resources.objects.get(resourceEmail=resource_email).syncToken
-    credentials = google.oauth2.credentials.Credentials(**session['credentials'])
     try:
+        sync_token = Resources.objects.get(resourceEmail=resource_email).syncToken
+        credentials = google.oauth2.credentials.Credentials(**session['credentials'])
         service = googleapiclient.discovery.build('calendar', 'v3', credentials=credentials)
-        events = service.events().list(calendarId=resource_email,
-                                       syncToken=sync_token).execute()
+        if sync_token == '':
+            events = service.events().list(calendarId=resource_email,
+                                           timeMin=datetime.now(timezone.utc).astimezone().isoformat()).execute()
+        else:
+            events = service.events().list(calendarId=resource_email,
+                                           syncToken=sync_token).execute()
         for event in events['items']:
             if event['status'] == "cancelled":
-                deleteEvent2(eventobject=event)
+                deleteEvent2(resource_email=resource_email,eventobject=event)
             else:
                 insertEvent(resource_email=resource_email, eventobject=event)
 
