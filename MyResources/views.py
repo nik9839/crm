@@ -14,9 +14,11 @@ from MyResources.fetch import *
 @api_view(['GET', 'POST'])
 def notify(request):
     try:
-        uuid = request._request.META['HTTP_X_GOOG_CHANNEL_ID']
-        resource_email = Resources.objects.get(resourceUUID=uuid).resourceEmail
-        get_changes(resource_email)
+        if not request._request.META['HTTP_X_GOOG_RESOURCE_STATE'] == 'sync':
+            uuid = request._request.META['HTTP_X_GOOG_CHANNEL_ID']
+            #print(request._request.META['HTTP_X_GOOG_RESOURCE_STATE'])
+            resource_email = Resources.objects.get(resourceUUID=uuid).resourceEmail
+            get_changes(resource_email)
         return Response(status=HTTP_202_ACCEPTED)
     except Exception:
         return Response(status=HTTP_202_ACCEPTED)
