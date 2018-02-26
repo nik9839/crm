@@ -72,3 +72,8 @@ class CheckLogin(APIView):
 class RoomDetails(APIView):
     def get(self, request):
         return Response(room_details(), status=HTTP_202_ACCEPTED)
+
+
+class RegisterResourceForNotification(APIView):
+    def post(self, request):
+        return Response(register_resource(request.data['email']), status=HTTP_202_ACCEPTED)
