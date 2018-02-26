@@ -1,7 +1,7 @@
 from MyResources.models import Events, Resources
 from datetime import datetime, timedelta, time
 import pytz
-
+import jwt
 utc = pytz.UTC
 
 
