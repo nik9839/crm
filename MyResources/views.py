@@ -30,8 +30,14 @@ class AddResource(APIView):
         return Response("data entered")
 
 
+class AddMutlipleResources(APIView):
+    def post(self,request):
+        for resource in request.data['items']:
+            insertResource(self, resource)
+        return Response("data entered")
+
 def test(request):
-    return HttpResponse(print_index_table())
+    return HttpResponse(print_index_table(request))
 
 
 class OverallStats(APIView):
