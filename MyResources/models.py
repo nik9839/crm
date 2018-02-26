@@ -6,18 +6,18 @@ from django.utils import timezone
 # Create your models here.
 
 class Events(models.Model):
-    event_id = models.CharField(max_length=40)
+    event_id = models.CharField(max_length=50)
     created = models.CharField(max_length=30)
     updated = models.CharField(max_length=30)
     summary = models.CharField(max_length=50)
-    description = models.CharField(max_length=100)
+    description = models.CharField(max_length=1000)
     start_dateTime = models.DateTimeField()
     end_dateTime = models.DateTimeField()
-    location = models.CharField(max_length=100)
+    location = models.CharField(max_length=1000)
     attendees = ArrayField(models.CharField(max_length=50), blank=True,null= True)
     resources_used = ArrayField(models.CharField(max_length=100), blank=True, default=[])
     event_dump = JSONField(default={})
-
+    creator = models.CharField(max_length=100,blank=True)
 
 
 class Resources(models.Model):
@@ -34,7 +34,9 @@ class Resources(models.Model):
     events = models.ManyToManyField(Events, blank=True)
     resourceCreated = models.DateTimeField(default=timezone.now, blank=True)
     roomName = models.CharField(max_length=30,blank=True)
+    roomLoginName = models.CharField(max_length=20,blank=True)
     roomPassword = models.CharField(max_length=20,blank=True)
+    roomUrl = models.URLField(blank=True)
     syncToken = models.CharField(max_length=30,blank=True)
 
 
