@@ -1,15 +1,16 @@
 from MyResources.models import Events, Resources
 from datetime import datetime, timedelta, time
+from django.utils import timezone
 import pytz
 import jwt
-utc = pytz.UTC
+# utc = pytz.UTC
 
 
 def overallStatsFunction():
     stats_dict = dict()
     stats_dict['total_meeting_rooms'] = Resources.objects.count()
     stats_dict['total_events'] = Events.objects.count()
-    stats_dict['booked_now'] = Events.objects.filter(start_dateTime__gte=utc.localize(datetime.now())).count()
+    stats_dict['booked_now'] = Events.objects.filter(start_dateTime__gte=timezone.now()).count()
     stats_dict['utilization'] = round(overallUtilization(), 2)
     return stats_dict
 
@@ -51,7 +52,7 @@ def resource_hours(events):
 
 def resource_present_hours(resource):
     created = resource.resourceCreated
-    now = utc.localize(datetime.now())
+    now = timezone.now()
     diff = now - created  # problem in calculating diff due to conflicting timeZone offsets
     days = diff.days
     days_to_hours = days * 8  # assuming 8 workings hours a day
@@ -101,8 +102,8 @@ def getMeetingsOfRoomOfaDay(resource_email):
     tomorrow = today + timedelta(1)
     today_end = datetime.combine(tomorrow, time())
     resource_obj =Resources.objects.prefetch_related('events').get(resourceEmail=resource_email)
-    meetings = resource_obj.events.filter(
-        end_dateTime__gte=utc.localize(datetime.now())).filter(start_dateTime__lte=utc.localize(today_end)).order_by('start_dateTime')
+    meetings = resource_obj.events.filter(end_dateTime__date=timezone.datetime.today())\
+        .filter(start_dateTime__gte=timezone.now()).order_by('start_dateTime')
 
     meetings_dict = {}
     items = []

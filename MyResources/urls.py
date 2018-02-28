@@ -16,7 +16,8 @@ urlpatterns = [
     path('gettodaysMeetingsofroom', views.RoomMeetings.as_view()),
     path('login', views.CheckLogin.as_view()),
     path('register', views.RegisterResourceForNotification.as_view()),
-    path('setcredentials',views.GenearteUserNamePassword.as_view())
+    path('setcredentials',views.GenearteUserNamePassword.as_view()),
+    path('insert', views.AddEvent.as_view())
 
 ]
 
