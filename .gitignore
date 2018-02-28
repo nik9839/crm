@@ -183,3 +183,5 @@ media
 
 # not pushing to git
 client_secret.json
+
+crm/production.py
