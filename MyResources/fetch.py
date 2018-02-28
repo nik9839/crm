@@ -102,8 +102,8 @@ def getMeetingsOfRoomOfaDay(resource_email):
     tomorrow = today + timedelta(1)
     today_end = datetime.combine(tomorrow, time())
     resource_obj =Resources.objects.prefetch_related('events').get(resourceEmail=resource_email)
-    meetings = resource_obj.events.filter(end_dateTime__date=timezone.datetime.today())\
-        .filter(start_dateTime__gte=timezone.now()).order_by('start_dateTime')
+    meetings = resource_obj.events.filter(end_dateTime__gte=timezone.now())\
+        .filter(start_dateTime__date=timezone.datetime.today()).order_by('start_dateTime')
 
     meetings_dict = {}
     items = []
