@@ -95,3 +95,13 @@ class GenearteUserNamePassword(APIView):
             resource.save()
 
         return Response('ok', status=HTTP_202_ACCEPTED)
+
+class AddEvent(APIView):
+    def post(self,request):
+        for event in request.data['items']:
+            try:
+                insertEvent('',event)
+            except Exception as e:
+                print(e)
+
+        return('ok')
