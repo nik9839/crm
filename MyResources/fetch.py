@@ -22,7 +22,7 @@ def room_wise_stats():
     for i in range(resource_objects.count()):
         room_dict = dict()
         room_dict['email'] = resource_objects[i].resourceEmail
-        room_dict['room_name'] = resource_objects[i].roomName
+        room_dict['room_name'] = resource_objects[i].resourceName
         room_dict['calender_name'] = resource_objects[i].generatedResourceName
         room_dict['location'] = resource_objects[i].buildingId
         room_dict['meetings'] = resource_objects[i].events.count()
@@ -100,7 +100,7 @@ def getMeetingsOfRoomOfaDay(resource_email):
     today = datetime.now().date()
     tomorrow = today + timedelta(1)
     today_end = datetime.combine(tomorrow, time())
-    resource_obj =Resources.objects.get(resourceEmail=resource_email)
+    resource_obj =Resources.objects.prefetch_related('events').get(resourceEmail=resource_email)
     meetings = resource_obj.events.filter(
         end_dateTime__gte=utc.localize(datetime.now())).filter(start_dateTime__lte=utc.localize(today_end)).order_by('start_dateTime')
 
@@ -129,12 +129,12 @@ def getMeetingsOfRoomOfaDay(resource_email):
 def checkCredentials(data):
     response = dict()
     response['credentials_valid'] = False
-    if Resources.objects.filter(roomLoginName=data['username'].lower()).exists():
-        resource = Resources.objects.get(roomLoginName=data['username'].lower())
+    if Resources.objects.filter(roomLoginName__iexact=data['username']).exists():
+        resource = Resources.objects.get(roomLoginName__iexact=data['username'])
         if resource.roomPassword == data['password']:
             response['credentials_valid'] = True
             response['capacity'] = resource.capacity
-            response['room_name'] = resource.roomName
+            response['room_name'] = resource.resourceName
             response['room_url'] = resource.roomUrl
             response['token'] = jwt.encode({'email': resource.resourceEmail}, 'secret', algorithm='HS256')
         else:

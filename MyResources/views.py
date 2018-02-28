@@ -5,7 +5,8 @@ from rest_framework.response import Response
 from MyResources.resources import insertResource
 from MyResources.fetchCalenderData import *
 from MyResources.fetch import *
-
+import string
+import random
 
 # Create your views here.
 
@@ -13,15 +14,12 @@ from MyResources.fetch import *
 # Issue of multiple notification for same change
 @api_view(['GET', 'POST'])
 def notify(request):
-    try:
-        if not request._request.META['HTTP_X_GOOG_RESOURCE_STATE'] == 'sync':
-            uuid = request._request.META['HTTP_X_GOOG_CHANNEL_ID']
-            #print(request._request.META['HTTP_X_GOOG_RESOURCE_STATE'])
-            resource_email = Resources.objects.get(resourceUUID=uuid).resourceEmail
-            get_changes(resource_email)
-        return Response(status=HTTP_202_ACCEPTED)
-    except Exception:
-        return Response(status=HTTP_202_ACCEPTED)
+    if not request._request.META['HTTP_X_GOOG_RESOURCE_STATE'] == 'sync':
+        uuid = request._request.META['HTTP_X_GOOG_CHANNEL_ID']
+        #print(request._request.META['HTTP_X_GOOG_RESOURCE_STATE'])
+        resource_email = Resources.objects.get(resourceUUID=uuid).resourceEmail
+        get_changes(resource_email)
+    return Response(status=HTTP_202_ACCEPTED)
 
 
 class AddResource(APIView):
@@ -66,6 +64,7 @@ class RoomMeetings(APIView):
 
 class CheckLogin(APIView):
     def post(self, request):
+        print(request.data)
         return Response(checkCredentials(request.data), status=HTTP_202_ACCEPTED)
 
 
@@ -75,5 +74,24 @@ class RoomDetails(APIView):
 
 
 class RegisterResourceForNotification(APIView):
-    def post(self, request):
+    def get(self, request):
+        resources = Resources.objects.all()
+        for i in range(resources.count()):
+            register_resource(resources[i].resourceEmail)
+        return Response('ok', status=HTTP_202_ACCEPTED)
+
+    def post(self,request):
         return Response(register_resource(request.data['email']), status=HTTP_202_ACCEPTED)
+
+def id_generator(size=8, chars=string.ascii_uppercase + string.digits):
+    return ''.join(random.choice(chars) for _ in range(size))
+
+class GenearteUserNamePassword(APIView):
+    def get(self,request):
+        resources = Resources.objects.all()
+        for resource in resources:
+            resource.roomLoginName = id_generator(6)
+            resource.roomPassword = str(id_generator(8,string.digits))
+            resource.save()
+
+        return Response('ok', status=HTTP_202_ACCEPTED)

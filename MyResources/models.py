@@ -6,7 +6,7 @@ from django.utils import timezone
 # Create your models here.
 
 class Events(models.Model):
-    event_id = models.CharField(max_length=50)
+    event_id = models.CharField(max_length=50, unique=True)
     created = models.CharField(max_length=30)
     updated = models.CharField(max_length=30)
     summary = models.CharField(max_length=50)
@@ -22,22 +22,22 @@ class Events(models.Model):
 
 class Resources(models.Model):
     resourceUUID = models.CharField(max_length=64, default='')
-    resourceEmail = models.CharField(max_length=100)
+    resourceName = models.CharField(max_length=30,blank=True)
+    resourceEmail = models.CharField(max_length=100,unique= True)
     resourceId = models.CharField(max_length=500)
     generatedResourceName = models.CharField(max_length=100)
-    resourceType = models.CharField(max_length=20)
+    resourceType = models.CharField(max_length=50)
     capacity = models.IntegerField()
     resourceCategory = models.CharField(max_length=20)
-    buildingId = models.CharField(max_length=20, blank=True)
-    floorName = models.IntegerField(blank=True)
+    buildingId = models.CharField(max_length=30, blank=True)
+    floorName = models.CharField(max_length=30, blank=True)
     resourceDumpdata = JSONField(default={})
     events = models.ManyToManyField(Events, blank=True)
     resourceCreated = models.DateTimeField(default=timezone.now, blank=True)
-    roomName = models.CharField(max_length=30,blank=True)
     roomLoginName = models.CharField(max_length=20,blank=True)
     roomPassword = models.CharField(max_length=20,blank=True)
     roomUrl = models.URLField(blank=True)
-    syncToken = models.CharField(max_length=30,blank=True)
+    syncToken = models.CharField(max_length=40,blank=True)
 
 
 

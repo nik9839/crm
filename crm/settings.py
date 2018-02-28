@@ -24,7 +24,7 @@ os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 SECRET_KEY = '6#pyk03^gpsvy7^in4p4n(2w#v6p017wr7g*(5k7j8)5c1p68g'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 

@@ -14,11 +14,14 @@ def insertResource(self,resourceObject):
         resourceObject['buildingId']='---'
         resourceObject['floorName'] = 0
 
+    if resourceObject.get('resourceType')==None:
+        resourceObject['resourceType']=''
+
     resource = Resources(resourceEmail=resourceObject['resourceEmail'],resourceId=resourceObject['resourceId'],
                          generatedResourceName=resourceObject['generatedResourceName'],resourceType=resourceObject['resourceType'],
                          capacity=resourceObject['capacity'],resourceCategory=resourceObject['resourceCategory'],
                          buildingId=resourceObject['buildingId'],floorName=resourceObject['floorName'], resourceDumpdata=resourceObject,
-                         resourceUUID= uuid.uuid4())
+                         resourceUUID= uuid.uuid4(), resourceName=resourceObject['resourceName'])
     resource.save()
 
     register_resource(resourceObject['resourceEmail'])

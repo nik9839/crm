@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/2.0/ref/settings/
 """
 
 import os
+import raven
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -24,7 +25,7 @@ os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 SECRET_KEY = '6#pyk03^gpsvy7^in4p4n(2w#v6p017wr7g*(5k7j8)5c1p68g'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
@@ -32,6 +33,7 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 
 INSTALLED_APPS = [
+    'raven.contrib.django.raven_compat',
     'rest_framework',
     'MyResources.apps.MyresourcesConfig',
     'django.contrib.admin',
@@ -87,11 +89,16 @@ CACHES ={
 DATABASES = {
 'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('DB_NAME', ''),
-        'USER': os.getenv('DB_USER', ''),
-        'PASSWORD': os.getenv('DB_PASSWORD', ''),
-        'HOST': os.getenv('DB_HOST', ''),
-        #'PORT': '',
+        'NAME': 'dainikbhaskar',
+        'USER': 'dbcorp',
+        'PASSWORD': 'dainik@veris',
+        'HOST': '13.90.83.192'
+            #'PORT': '',
+        #'ENGINE': 'django.db.backends.postgresql',
+        #'NAME': os.getenv('DB_NAME', ''),
+        #'USER': os.getenv('DB_USER', ''),
+        #'PASSWORD': os.getenv('DB_PASSWORD', ''),
+        #'HOST': os.getenv('DB_HOST', ''),
     }
 }
 
@@ -144,3 +151,10 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 GOOGLE_PUSH_NOTIFICATION_CALLBACK_URL = 'https://conference.veris.in/MyResources/watch'
+
+RAVEN_CONFIG = {
+    'dsn': 'https://a88b48d64d9e4cfbb0a5559aa561abbe:458f26d050c746c08424c087d26f6761@sentry.io/294557',
+    # If you are using git, you can also automatically configure the
+    # release based on the git info.
+    #'release': raven.fetch_git_sha(os.path.abspath(os.curdir)),
+}

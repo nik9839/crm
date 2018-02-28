@@ -1,5 +1,6 @@
 import os
 import requests
+import logging
 
 import google.oauth2.credentials
 import google_auth_oauthlib.flow
@@ -38,16 +39,26 @@ def get_changes(resource_email):
             events = service.events().list(calendarId=resource_email,
                                            syncToken=sync_token).execute()
         for event in events['items']:
-            if event['status'] == "cancelled":
-                deleteEvent2(resource_email=resource_email,eventobject=event)
-            else:
-                insertEvent(resource_email=resource_email, eventobject=event)
+            try:
+                if event['status'] == "cancelled":
+                    deleteEvent2(resource_email=resource_email,eventobject=event)
+                else:
+                    insertEvent(resource_email=resource_email, eventobject=event)
+            except Exception as e:
+                logging.error(e, exc_info=True)
+                print(resource_email)
+                print(event['id'])
 
         resource = Resources.objects.get(resourceEmail=resource_email)
         resource.syncToken = events['nextSyncToken']
         resource.save()
+
+        # Save credentials back to session in case access token was refreshed.
+        # ACTION ITEM: In a production app, you likely want to save these
+        #              credentials in a persistent database instead.
+        session['credentials'] = credentials_to_dict(credentials)
     except Exception as e:
-        print(e)
+        logging.error(e, exc_info=True)
 
 
 def register_resource(email):
@@ -56,7 +67,11 @@ def register_resource(email):
         watch_body ={
             "id": Resources.objects.get(resourceEmail=email).resourceUUID,
             "type": "web_hook",
-            "address": getattr(settings, 'GOOGLE_PUSH_NOTIFICATION_CALLBACK_URL', None)
+            "address": getattr(settings, 'GOOGLE_PUSH_NOTIFICATION_CALLBACK_URL', None),
+            "params": {
+                "ttl": '1767225599'
+            }
+
         }
         credentials = google.oauth2.credentials.Credentials(**session['credentials'])
         service = googleapiclient.discovery.build('calendar', 'v3', credentials=credentials)
