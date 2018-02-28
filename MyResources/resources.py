@@ -7,7 +7,7 @@ from MyResources.models import  Resources
 
 def insertResource(self,resourceObject):
 
-    if resourceObject.get('capacity')==None:
+    if resourceObject.get('capacity', None) is None:
         resourceObject['capacity']=0
 
     if resourceObject.get('buildingId')==None:

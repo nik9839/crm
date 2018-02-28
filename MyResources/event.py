@@ -17,12 +17,14 @@ def insertEvent(resource_email,eventobject):
             attendees_list.append(eventobject['attendees'][i]['email'])
         else:
             resources_used_list.append(eventobject['attendees'][i]['email'])
-    print(eventobject)
+
     event = Events(event_id=eventobject['id'], created=eventobject['created'], updated=eventobject['updated'],
                    summary=eventobject.get('summary', ''),
-                   description=eventobject.get('description', ''), start_dateTime=eventobject.get('start',{}).get('dateTime', ''),
-                   end_dateTime=eventobject.get('end',{}).get('dateTime',''), location=eventobject['location'],
-                   event_dump=eventobject, attendees=attendees_list, resources_used=resources_used_list,creator=eventobject['creator']['email'])
+                   description=eventobject.get('description', ''), start_dateTime=eventobject.get('start',{}).get('dateTime',None),
+                   end_dateTime=eventobject.get('end',{}).get('dateTime', None), location=eventobject['location'],
+                   event_dump=eventobject, attendees=attendees_list, resources_used=resources_used_list,
+                   creator=eventobject['creator']['email'], start_date= eventobject.get('start',{}).get('date',None),
+                   end_date=eventobject.get('end',{}).get('date', None), recurrence= eventobject.get('recurrence',[]))
 
     event.save()
     for j in range(len(resources_used_list)):

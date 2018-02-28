@@ -11,14 +11,16 @@ class Events(models.Model):
     updated = models.CharField(max_length=30)
     summary = models.CharField(max_length=50)
     description = models.CharField(max_length=1000)
-    start_dateTime = models.DateTimeField()
-    end_dateTime = models.DateTimeField()
+    start_dateTime = models.DateTimeField(null=True)
+    end_dateTime = models.DateTimeField(null=True)
     location = models.CharField(max_length=1000)
     attendees = ArrayField(models.CharField(max_length=50), blank=True,null= True)
     resources_used = ArrayField(models.CharField(max_length=100), blank=True, default=[])
     event_dump = JSONField(default={})
     creator = models.CharField(max_length=100,blank=True)
-
+    start_date = models.DateField(null=True)
+    end_date = models.DateField(null=True)
+    recurrence= ArrayField(models.TextField(),default=[], blank=True )
 
 class Resources(models.Model):
     resourceUUID = models.CharField(max_length=64, default='')

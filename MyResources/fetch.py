@@ -1,3 +1,5 @@
+from django.db.models import Q
+
 from MyResources.models import Events, Resources
 from datetime import datetime, timedelta, time
 from django.utils import timezone
@@ -102,8 +104,13 @@ def getMeetingsOfRoomOfaDay(resource_email):
     tomorrow = today + timedelta(1)
     today_end = datetime.combine(tomorrow, time())
     resource_obj =Resources.objects.prefetch_related('events').get(resourceEmail=resource_email)
-    meetings = resource_obj.events.filter(end_dateTime__date=timezone.datetime.today())\
-        .filter(start_dateTime__gte=timezone.now()).order_by('start_dateTime')
+    today_date = timezone.datetime.today();
+    try:
+        #meetings = resource_obj.events.filter(Q(end_dateTime__date=today_date,start_dateTime__lte=timezone.now())| Q(end_date__gte=today_date,start_date__lte=today_date)).order_by('start_dateTime')
+        meetings = resource_obj.events.filter(Q(end_dateTime__gte=timezone.now(),start_dateTime__date=timezone.datetime.today()) |Q(end_date__gte=today_date,start_date__lte=today_date)).order_by('start_dateTime')
+
+    except Exception as e:
+        print(e)
 
     meetings_dict = {}
     items = []
