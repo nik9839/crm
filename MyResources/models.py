@@ -7,9 +7,9 @@ from django.utils import timezone
 
 class Events(models.Model):
     event_id = models.CharField(max_length=50, unique=True)
-    created = models.CharField(max_length=30)
-    updated = models.CharField(max_length=30)
-    summary = models.CharField(max_length=50)
+    created = models.DateTimeField()
+    updated = models.DateTimeField()
+    summary = models.CharField(max_length=500)
     description = models.CharField(max_length=1000)
     start_dateTime = models.DateTimeField(null=True)
     end_dateTime = models.DateTimeField(null=True)
