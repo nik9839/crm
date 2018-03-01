@@ -2,6 +2,16 @@
 
 from django.db import migrations, models
 
+from django.utils import timezone
+
+def edit_null_items(apps, schema_editor):
+    Events = apps.get_model("MyResources", "Events")
+    for event in Events.objects.all():
+        event.start_dateTime = timezone.now().replace(year=1900)
+        event.end_dateTime = timezone.now().replace(year=1901)
+        event.save()
+
+
 
 class Migration(migrations.Migration):
 
@@ -35,4 +45,5 @@ class Migration(migrations.Migration):
             name='start_dateTime',
             field=models.DateTimeField(null=True),
         ),
+        migrations.RunPython(migrations.RunPython.noop, edit_null_items)
     ]
