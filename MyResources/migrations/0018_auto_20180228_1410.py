@@ -7,9 +7,10 @@ from django.utils import timezone
 def edit_null_items(apps, schema_editor):
     Events = apps.get_model("MyResources", "Events")
     for event in Events.objects.all():
-        event.start_dateTime = timezone.now().replace(year=1900)
-        event.end_dateTime = timezone.now().replace(year=1901)
-        event.save()
+        if event.start_dateTime ==None:
+            event.start_dateTime = timezone.now().replace(year=1900)
+            event.end_dateTime = timezone.now().replace(year=1901)
+            event.save()
 
 
 
