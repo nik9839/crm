@@ -8,6 +8,8 @@ import googleapiclient.discovery
 from django.http import HttpResponse
 from django.shortcuts import redirect
 from django.conf import settings
+from rest_framework.decorators import api_view
+
 from MyResources.event import insertEvent, deleteEvent2
 from MyResources.models import Resources
 from django.contrib.sessions.backends.db import SessionStore
@@ -26,6 +28,30 @@ API_VERSION = 'v3'
 def callbackauthorized():
     return HttpResponse('authorized')
 
+@api_view(['GET', 'POST'])
+def get_events(request):
+    for resource in Resources.objects.all():
+        try:
+            credentials = google.oauth2.credentials.Credentials(**session['credentials'])
+            service = googleapiclient.discovery.build('calendar', 'v3', credentials=credentials)
+            events = service.events().list(calendarId=resource.resourceEmail,
+                                           timeMin=datetime.now(timezone.utc).astimezone().isoformat()).execute()
+            for event in events['items']:
+                try:
+                    if event['status'] == "cancelled":
+                        deleteEvent2(resource_email=resource.resourceEmail,eventobject=event)
+                    else:
+                        insertEvent(resource_email=resource.resourceEmail, eventobject=event)
+                except Exception as e:
+                    logging.error(e, exc_info=True)
+                    print(resource.resourceEmail)
+                    print(event['id'])
+
+                resource.syncToken = events['nextSyncToken']
+                resource.save()
+        except Exception as e:
+            print(e)
+    return HttpResponse()
 
 def get_changes(resource_email):
     try:

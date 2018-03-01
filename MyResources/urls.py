@@ -17,7 +17,8 @@ urlpatterns = [
     path('login', views.CheckLogin.as_view()),
     path('register', views.RegisterResourceForNotification.as_view()),
     path('setcredentials',views.GenearteUserNamePassword.as_view()),
-    path('insert', views.AddEvent.as_view())
+    path('insert', views.AddEvent.as_view()),
+    path('getEvents',views.get_events)
 
 ]
 
