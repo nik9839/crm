@@ -127,6 +127,9 @@ def getMeetingsOfRoomOfaDay(resource_email):
         meeting_dict['end_dateTime'] = meeting.end_dateTime
         meeting_dict['location'] = meeting.location
         meeting_dict['creator'] = meeting.creator
+        if meeting_dict['start_dateTime']==None:
+            meeting_dict['start_dateTime'] = timezone.now().replace(hour=00,minute=00,second=00)
+            meeting_dict['end_dateTime'] = timezone.now().replace(hour=23,minute=59,second=59)
         items.append(meeting_dict)
 
     meetings_dict['items'] = items
