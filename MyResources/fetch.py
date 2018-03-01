@@ -107,7 +107,7 @@ def getMeetingsOfRoomOfaDay(resource_email):
     today_date = timezone.datetime.today()
     try:
         #meetings = resource_obj.events.filter(Q(end_dateTime__date=today_date,start_dateTime__lte=timezone.now())| Q(end_date__gte=today_date,start_date__lte=today_date)).order_by('start_dateTime')
-        meetings = resource_obj.events.filter(Q(end_dateTime__gte=timezone.now(),end_dateTime__lte=timezone.now() + timedelta(1)) |Q(end_date__gte=today_date,start_date__lte=today_date)).order_by('start_dateTime')
+        meetings = resource_obj.events.filter(Q(end_dateTime__gte=timezone.now(),end_dateTime__lte=timezone.now() + timedelta(1)) |Q(end_date__gt=today_date,start_date__lte=today_date)).order_by('start_dateTime')
     except Exception as e:
         print(e)
 
