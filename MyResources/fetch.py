@@ -118,7 +118,11 @@ def getMeetingsOfRoomOfaDay(resource_email):
         meeting_dict = dict()
         meeting_dict['event_id'] = meeting.event_id
         meeting_dict['summary'] = meeting.summary
+        if meeting_dict['summary'] == '':
+            meeting_dict['summary'] = 'No title'
         meeting_dict['description'] = meeting.description
+        if meeting_dict['description'] == '':
+            meeting_dict['description'] = 'No Description'
         meeting_dict['created'] = meeting.created
         meeting_dict['updated'] = meeting.updated
         meeting_dict['attendees'] = meeting.attendees
