@@ -54,11 +54,10 @@ class Meetings(APIView):
 
 
 class RoomMeetings(APIView):
-    def get(self, request):
+    def post(self, request):
         try:
             a = jwt.decode(request.data['auth_token'],'secret', algorithm='HS256')
             resource_email = a['email']
-            #resource_email = 'veris.in_37343739313830343532@resource.calendar.google.com'
             return Response(getMeetingsOfRoomOfaDay(resource_email), status=HTTP_202_ACCEPTED)
         except Exception:
             return Response('Bad Request', status=HTTP_401_UNAUTHORIZED)
