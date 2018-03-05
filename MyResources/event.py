@@ -21,7 +21,7 @@ def insertEvent(resource_email,eventobject):
     event = Events(event_id=eventobject['id'], created=eventobject['created'], updated=eventobject['updated'],
                    summary=eventobject.get('summary', ''),
                    description=eventobject.get('description', ''), start_dateTime=eventobject.get('start',{}).get('dateTime',None),
-                   end_dateTime=eventobject.get('end',{}).get('dateTime', None), location=eventobject.get('location'),
+                   end_dateTime=eventobject.get('end',{}).get('dateTime', None), location=eventobject.get('location',None),
                    event_dump=eventobject, attendees=attendees_list, resources_used=resources_used_list,
                    creator=eventobject['creator']['email'], start_date= eventobject.get('start',{}).get('date',None),
                    end_date=eventobject.get('end',{}).get('date', None),
