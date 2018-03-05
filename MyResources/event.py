@@ -42,7 +42,6 @@ def deleteEvent2(resource_email,eventobject):
 
         Resources.objects.get(resourceEmail=resource_email).events.remove(event)
         event.resources_used.remove(resource_email)
+        event.save()
 
-        if len(event.resources_used) == 0:
-            event.delete()
 
