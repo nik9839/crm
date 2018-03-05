@@ -33,7 +33,7 @@ def get_events(request):
     for resource in Resources.objects.all():
         try:
             credentials = google.oauth2.credentials.Credentials(**session['credentials'])
-            service = googleapiclient.discovery.build('calendar', 'v3', credentials=credentials)
+            service = googleapiclient.discovery.build('calendar', 'v3', credentials=credentials ,cache_discovery=False)
             events = service.events().list(calendarId=resource.resourceEmail).execute()
             for event in events['items']:
                 try:
@@ -58,7 +58,7 @@ def get_events_after(request):
     for resource in Resources.objects.all():
         try:
             credentials = google.oauth2.credentials.Credentials(**session['credentials'])
-            service = googleapiclient.discovery.build('calendar', 'v3', credentials=credentials)
+            service = googleapiclient.discovery.build('calendar', 'v3', credentials=credentials,cache_discovery=False)
             events = service.events().list(calendarId=resource.resourceEmail,
                                            timeMin=datetime.now(timezone.utc).astimezone().isoformat()).execute()
             for event in events['items']:
@@ -83,7 +83,7 @@ def get_changes(resource_email):
     try:
         sync_token = Resources.objects.get(resourceEmail=resource_email).syncToken
         credentials = google.oauth2.credentials.Credentials(**session['credentials'])
-        service = googleapiclient.discovery.build('calendar', 'v3', credentials=credentials)
+        service = googleapiclient.discovery.build('calendar', 'v3', credentials=credentials,cache_discovery=False)
         if sync_token == '':
             events = service.events().list(calendarId=resource_email,
                                            timeMin=datetime.now(timezone.utc).astimezone().isoformat()).execute()

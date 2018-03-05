@@ -33,6 +33,7 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 
 INSTALLED_APPS = [
+    'recurrence',
     'raven.contrib.django.raven_compat',
     'rest_framework',
     'MyResources.apps.MyresourcesConfig',
