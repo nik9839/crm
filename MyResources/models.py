@@ -13,7 +13,7 @@ class Events(models.Model):
     description = models.CharField(max_length=1000)
     start_dateTime = models.DateTimeField(null=True)
     end_dateTime = models.DateTimeField(null=True)
-    location = models.CharField(max_length=1000)
+    location = models.CharField(max_length=1000,null=True)
     attendees = ArrayField(models.CharField(max_length=50), blank=True,null= True)
     resources_used = ArrayField(models.CharField(max_length=100), blank=True, default=[])
     event_dump = JSONField(default={})
