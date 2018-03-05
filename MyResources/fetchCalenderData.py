@@ -34,8 +34,7 @@ def get_events(request):
         try:
             credentials = google.oauth2.credentials.Credentials(**session['credentials'])
             service = googleapiclient.discovery.build('calendar', 'v3', credentials=credentials)
-            events = service.events().list(calendarId=resource.resourceEmail,
-                                           timeMin=datetime.now(timezone.utc).astimezone().isoformat()).execute()
+            events = service.events().list(calendarId=resource.resourceEmail).execute()
             for event in events['items']:
                 try:
                     if event['status'] == "cancelled":
