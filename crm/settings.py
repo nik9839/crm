@@ -32,6 +32,7 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 
 INSTALLED_APPS = [
+    'recurrence',
     'rest_framework',
     'MyResources.apps.MyresourcesConfig',
     'django.contrib.admin',
