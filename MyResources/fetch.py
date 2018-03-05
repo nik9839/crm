@@ -100,9 +100,6 @@ def getMeetings(resources_list):
 
 
 def getMeetingsOfRoomOfaDay(resource_email):
-    today = datetime.now().date()
-    tomorrow = today + timedelta(1)
-    today_end = datetime.combine(tomorrow, time())
     resource_obj =Resources.objects.prefetch_related('events').get(resourceEmail=resource_email)
     today_date = timezone.datetime.today()
     try:
