@@ -52,6 +52,33 @@ def get_events(request):
             print(e)
     return HttpResponse()
 
+
+@api_view(['GET', 'POST'])
+def get_events_after(request):
+    for resource in Resources.objects.all():
+        try:
+            credentials = google.oauth2.credentials.Credentials(**session['credentials'])
+            service = googleapiclient.discovery.build('calendar', 'v3', credentials=credentials)
+            events = service.events().list(calendarId=resource.resourceEmail,
+                                           timeMin=datetime.now(timezone.utc).astimezone().isoformat()).execute()
+            for event in events['items']:
+                try:
+                    if event['status'] == "cancelled":
+                        deleteEvent2(resource_email=resource.resourceEmail,eventobject=event)
+                    else:
+                        insertEvent(resource_email=resource.resourceEmail, eventobject=event)
+                except Exception as e:
+                    logging.error(e, exc_info=True)
+                    print(resource.resourceEmail)
+                    print(event['id'])
+
+                resource.syncToken = events['nextSyncToken']
+                resource.save()
+        except Exception as e:
+            print(e)
+    return HttpResponse()
+
+
 def get_changes(resource_email):
     try:
         sync_token = Resources.objects.get(resourceEmail=resource_email).syncToken
