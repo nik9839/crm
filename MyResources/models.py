@@ -17,7 +17,7 @@ class Events(models.Model):
     attendees = ArrayField(models.CharField(max_length=500), blank=True,null= True)
     resources_used = ArrayField(models.CharField(max_length=1000), blank=True, default=[])
     event_dump = JSONField(default={})
-    creator = models.CharField(max_length=100,blank=True)
+    creator = models.CharField(max_length=400,blank=True)
     start_date = models.DateField(null=True)
     end_date = models.DateField(null=True)
     recurr = RecurrenceField(null=True)
