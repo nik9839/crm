@@ -12,6 +12,7 @@ def insertEvent(resource_email,eventobject):
     attendees_list = []
     resources_used_list = []
 
+    # check if no attendees field
     if eventobject.get('attendees', None) is None:
         eventobject['attendees'] = []
 
