@@ -218,6 +218,7 @@ def room_details():
 
     for i in range(len(rooms)):
         room_dictionary = dict()
+        rooms_dictionary['calenderName'] = rooms[i].generatedResourceName
         room_dictionary['name'] = rooms[i].roomName
         room_dictionary['password'] = rooms[i].roomPassword
         room_dictionary['capacity'] = rooms[i].capacity
