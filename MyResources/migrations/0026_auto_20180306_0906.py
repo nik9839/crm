@@ -3,6 +3,14 @@
 from django.db import migrations, models
 
 
+def edit_null_items(apps, schema_editor):
+    Events = apps.get_model("MyResources", "Events")
+    for event in Events.objects.all():
+        if event.creator ==None:
+            event.creator=''
+            event.save()
+
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -15,4 +23,5 @@ class Migration(migrations.Migration):
             name='creator',
             field=models.CharField(blank=True, max_length=400, null=True),
         ),
+        migrations.RunPython(migrations.RunPython.noop, edit_null_items)
     ]

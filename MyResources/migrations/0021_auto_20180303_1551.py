@@ -3,6 +3,13 @@
 from django.db import migrations, models
 
 
+def edit_null_items(apps, schema_editor):
+    Events = apps.get_model("MyResources", "Events")
+    for event in Events.objects.all():
+        if event.location ==None:
+            event.location=''
+            event.save()
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -15,4 +22,5 @@ class Migration(migrations.Migration):
             name='location',
             field=models.CharField(max_length=1000, null=True),
         ),
+        migrations.RunPython(migrations.RunPython.noop, edit_null_items)
     ]
