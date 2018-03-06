@@ -12,18 +12,21 @@ def insertEvent(resource_email,eventobject):
     attendees_list = []
     resources_used_list = []
 
+    if eventobject.get('attendees', None) is None:
+        eventobject['attendees'] = []
+
     for i in range(len(eventobject['attendees'])):
         if not (eventobject['attendees'][i].get('resource')):
             attendees_list.append(eventobject['attendees'][i]['email'])
         else:
             if eventobject['attendees'][i]['responseStatus'] != "declined":
                 resources_used_list.append(eventobject['attendees'][i]['email'])
-    event = Events(event_id=eventobject['id'], created=eventobject['created'], updated=eventobject['updated'],
+    event = Events(event_id=eventobject['id'], created=eventobject.get('created'), updated=eventobject.get('updated'),
                    summary=eventobject.get('summary', ''),
                    description=eventobject.get('description', ''), start_dateTime=eventobject.get('start',{}).get('dateTime',None),
                    end_dateTime=eventobject.get('end',{}).get('dateTime', None), location=eventobject.get('location',None),
                    event_dump=eventobject, attendees=attendees_list, resources_used=resources_used_list,
-                   creator=eventobject['creator']['email'], start_date= eventobject.get('start',{}).get('date',None),
+                   creator=eventobject.get('creator',{}).get('email',None), start_date= eventobject.get('start',{}).get('date',None),
                    end_date=eventobject.get('end',{}).get('date', None),
                    recurr= eventobject.get('recurrence',[None])[0])
 
