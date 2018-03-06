@@ -64,7 +64,6 @@ class RoomMeetings(APIView):
 
 class CheckLogin(APIView):
     def post(self, request):
-        print(request.data)
         return Response(checkCredentials(request.data), status=HTTP_202_ACCEPTED)
 
 

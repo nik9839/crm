@@ -7,8 +7,8 @@ from recurrence.fields import RecurrenceField
 
 class Events(models.Model):
     event_id = models.CharField(max_length=500, unique=True)
-    created = models.DateTimeField()
-    updated = models.DateTimeField()
+    created = models.DateTimeField(null=True)
+    updated = models.DateTimeField(null=True)
     summary = models.CharField(max_length=1000)
     description = models.TextField()
     start_dateTime = models.DateTimeField(null=True)
@@ -17,7 +17,7 @@ class Events(models.Model):
     attendees = ArrayField(models.CharField(max_length=500), blank=True,null= True)
     resources_used = ArrayField(models.CharField(max_length=1000), blank=True, default=[])
     event_dump = JSONField(default={})
-    creator = models.CharField(max_length=400,blank=True)
+    creator = models.CharField(max_length=400,blank=True,null=True)
     start_date = models.DateField(null=True)
     end_date = models.DateField(null=True)
     recurr = RecurrenceField(null=True)
