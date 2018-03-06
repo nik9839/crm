@@ -111,6 +111,9 @@ def getMeetingsOfRoomOfaDay(resource_email):
     meetings_dict = {}
     items = []
 
+    tz = pytz.timezone('Asia/Kolkata')
+    zone = timezone.now().astimezone(tz)
+
     for meeting in meetings:
         meeting_dict = dict()
         meeting_dict['event_id'] = meeting.event_id
@@ -129,8 +132,8 @@ def getMeetingsOfRoomOfaDay(resource_email):
         meeting_dict['location'] = meeting.location
         meeting_dict['creator'] = meeting.creator
         if meeting_dict['start_dateTime']==None:
-            meeting_dict['start_dateTime'] = timezone.now().replace(hour=00,minute=00,second=00)
-            meeting_dict['end_dateTime'] = timezone.now().replace(hour=23,minute=59,second=59)
+            meeting_dict['start_dateTime'] = zone.replace(hour=00,minute=00,second=00)
+            meeting_dict['end_dateTime'] = zone.replace(hour=23,minute=59,second=59)
         items.append(meeting_dict)
 
 
@@ -160,20 +163,21 @@ def getMeetingsOfRoomOfaDay(resource_email):
                     meeting_dict['start_dateTime'] = meeting.start_dateTime
                     meeting_dict['end_dateTime'] = meeting.end_dateTime
                     if meeting_dict['start_dateTime'] == None:
-                        meeting_dict['start_dateTime'] = timezone.now().replace(hour=00, minute=00, second=00)
-                        meeting_dict['end_dateTime'] = timezone.now().replace(hour=23, minute=59, second=59)
+                        meeting_dict['start_dateTime'] = zone.replace(hour=00, minute=00, second=00)
+                        meeting_dict['end_dateTime'] = zone.replace(hour=23, minute=59, second=59)
                     else:
                         time = datetime.now()
                         meeting_dict['start_dateTime'] = meeting.start_dateTime.replace(year=time.year,
                                                                                         month=time.month, day=time.day)
-                        diff = meeting.end_dateTime.date() - meeting.start_dateTime.date()
-                        if diff == 0:
-                            meeting_dict['end_dateTime'] = meeting.end_dateTime.replace(year=time.year,
-                                                                                        month=time.month, day=time.day)
-                        else:
-                            meeting_dict['end_dateTime'] = meeting.end_dateTime.replace(year=time.year,
-                                                                                        month=time.month,
-                                                                                        day=time.day + 1)
+                        meeting_dict['end_dateTime'] = meeting.end_dateTime.replace(year=time.year,
+                                                                                    month=time.month, day=time.day)
+                        # diff = meeting.end_dateTime.date() - meeting.start_dateTime.date()
+                        # if diff == 0:
+                        #
+                        # else:
+                        #     meeting_dict['end_dateTime'] = meeting.end_dateTime.replace(year=time.year,
+                        #                                                                 month=time.month,
+                        #                                                                 day=time.day + 1)
                     meeting_dict['location'] = meeting.location
                     meeting_dict['creator'] = meeting.creator
                     items.append(meeting_dict)
