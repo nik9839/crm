@@ -102,5 +102,5 @@ class AddEvent(APIView):
                 insertEvent('',event)
             except Exception as e:
                 print(e)
-
         return('ok')
+

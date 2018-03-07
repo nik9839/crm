@@ -27,16 +27,22 @@ SCOPES = ['https://www.googleapis.com/auth/calendar']
 API_SERVICE_NAME = 'calender'
 API_VERSION = 'v3'
 
+tz = pytz.timezone('Asia/Kolkata')
+zone = timezone.now().astimezone(tz)
 
 def callbackauthorized():
     return HttpResponse('authorized')
 
 @api_view(['GET', 'POST'])
 def get_events(request):
+    try:
+        data_ = Session.objects.get(session_key='credentials').session_data
+        credentials = google.oauth2.credentials.Credentials(**ast.literal_eval(data_))
+    except Exception:
+        credentials = google.oauth2.credentials.Credentials(**session['credentials'])
+    service = googleapiclient.discovery.build('calendar', 'v3', credentials=credentials, cache_discovery=False)
     for resource in Resources.objects.all():
         try:
-            credentials = google.oauth2.credentials.Credentials(**session['credentials'])
-            service = googleapiclient.discovery.build('calendar', 'v3', credentials=credentials ,cache_discovery=False)
             events = service.events().list(calendarId=resource.resourceEmail).execute()
             for event in events['items']:
                 try:
@@ -53,15 +59,21 @@ def get_events(request):
                 resource.save()
         except Exception as e:
             print(e)
-    return HttpResponse()
+    Session.objects.get(session_key='credentials').session_data = credentials_to_dict(credentials)
+    session['credentials'] = credentials_to_dict(credentials)
+    return HttpResponse('ok')
 
 
 @api_view(['GET', 'POST'])
 def get_events_after(request):
+    try:
+        data_ = Session.objects.get(session_key='credentials').session_data
+        credentials = google.oauth2.credentials.Credentials(**ast.literal_eval(data_))
+    except Exception:
+        credentials = google.oauth2.credentials.Credentials(**session['credentials'])
+    service = googleapiclient.discovery.build('calendar', 'v3', credentials=credentials, cache_discovery=False)
     for resource in Resources.objects.all():
         try:
-            credentials = google.oauth2.credentials.Credentials(**session['credentials'])
-            service = googleapiclient.discovery.build('calendar', 'v3', credentials=credentials,cache_discovery=False)
             events = service.events().list(calendarId=resource.resourceEmail,
                                            timeMin=datetime.now(timezone.utc).astimezone().isoformat()).execute()
             for event in events['items']:
@@ -79,13 +91,19 @@ def get_events_after(request):
                 resource.save()
         except Exception as e:
             print(e)
-    return HttpResponse()
+    Session.objects.get(session_key='credentials').session_data = credentials_to_dict(credentials)
+    session['credentials'] = credentials_to_dict(credentials)
+    return HttpResponse('ok')
 
 
 def get_changes(resource_email):
     try:
         sync_token = Resources.objects.get(resourceEmail=resource_email).syncToken
-        credentials = google.oauth2.credentials.Credentials(**session['credentials'])
+        try:
+            data_ = Session.objects.get(session_key='credentials').session_data
+            credentials = google.oauth2.credentials.Credentials(**ast.literal_eval(data_))
+        except Exception:
+            credentials = google.oauth2.credentials.Credentials(**session['credentials'])
         service = googleapiclient.discovery.build('calendar', 'v3', credentials=credentials,cache_discovery=False)
         if sync_token == '':
             events = service.events().list(calendarId=resource_email,
@@ -111,8 +129,11 @@ def get_changes(resource_email):
         # Save credentials back to session in case access token was refreshed.
         # ACTION ITEM: In a production app, you likely want to save these
         #              credentials in a persistent database instead.
+        Session.objects.get(session_key='credentials').session_data = credentials_to_dict(credentials)
         session['credentials'] = credentials_to_dict(credentials)
     except Exception as e:
+        print(resource_email)
+        print(sync_token)
         logging.error(e, exc_info=True)
 
 
@@ -152,6 +173,14 @@ def authorize(request):
         include_granted_scopes='true')
 
     # Store the state so the callback can verify the auth server response.
+    try:
+        session_state = Session.objects.get(session_key='state')
+        session_state.session_data = state
+        session_state.save()
+    except Exception:
+        session_state = Session(session_key='state', session_data=state, expire_date=zone.replace(year=2025))
+        session_state.save()
+
     session['state'] = state
 
     return redirect(authorization_url)
@@ -160,7 +189,10 @@ def authorize(request):
 def oauth2callback(request):
     # Specify the state when creating the flow in the callback so that it can
     # verified in the authorization server response.
-    state = session['state']
+    try:
+        state = Session.objects.get(session_key='state').session_data
+    except Exception:
+        state = session['state']
 
     flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(
         CLIENT_SECRETS_FILE, scopes=SCOPES, state=state)
@@ -178,6 +210,7 @@ def oauth2callback(request):
     #              credentials in a persistent database instead.
     credentials = flow.credentials
     session['credentials'] = credentials_to_dict(credentials)
+    storetosessiontable(credentials)
 
     return callbackauthorized()
 
@@ -201,3 +234,23 @@ def credentials_to_dict(credentials):
             'client_id': credentials.client_id,
             'client_secret': credentials.client_secret,
             'scopes': credentials.scopes}
+
+def storetosessiontable(credentials):
+
+    cred_dict = {'token': credentials.token,
+                'refresh_token': credentials.refresh_token,
+                'token_uri': credentials.token_uri,
+                'client_id': credentials.client_id,
+                'client_secret': credentials.client_secret,
+                'scopes': credentials.scopes}
+
+    try:
+        session_ = Session.objects.get(session_key='credentials')
+        session_.session_data = cred_dict
+        session.expire_date = zone.replace(year=2025)
+        session_.save()
+    except Exception:
+        session_ = Session(session_data=cred_dict, expire_date=zone.replace(year=2025), session_key='credentials')
+        session_.save()
+
+
