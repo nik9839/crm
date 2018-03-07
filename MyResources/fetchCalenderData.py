@@ -1,10 +1,13 @@
 import os
+
+import pytz
 import requests
 import logging
-
+import ast
 import google.oauth2.credentials
 import google_auth_oauthlib.flow
 import googleapiclient.discovery
+from django.contrib.sessions.models import Session
 from django.http import HttpResponse
 from django.shortcuts import redirect
 from django.conf import settings
@@ -13,8 +16,8 @@ from rest_framework.decorators import api_view
 from MyResources.event import insertEvent, deleteEvent2
 from MyResources.models import Resources
 from django.contrib.sessions.backends.db import SessionStore
-from datetime import datetime, timezone
-
+from datetime import datetime
+from django.utils import timezone
 session = SessionStore()
 
 # change this for building docker image
