@@ -150,7 +150,11 @@ def register_resource(email):
             }
 
         }
-        credentials = google.oauth2.credentials.Credentials(**session['credentials'])
+        try:
+            data_ = Session.objects.get(session_key='credentials').session_data
+            credentials = google.oauth2.credentials.Credentials(**ast.literal_eval(data_))
+        except Exception:
+            credentials = google.oauth2.credentials.Credentials(**session['credentials'])
         service = googleapiclient.discovery.build('calendar', 'v3', credentials=credentials)
         a = service.events().watch(calendarId=email, body=watch_body).execute()
         print(a)
