@@ -12,7 +12,7 @@ def overallStatsFunction():
     stats_dict = dict()
     stats_dict['total_meeting_rooms'] = Resources.objects.count()
     stats_dict['total_events'] = Events.objects.count()
-    stats_dict['booked_now'] = Events.objects.filter(start_dateTime__gte=timezone.now()).count()
+    stats_dict['booked_now'] = Events.objects.filter(Q(start_dateTime__gte=timezone.now()) | Q(start_date__gt= timezone.datetime.today())).count()
     stats_dict['utilization'] = round(overallUtilization(), 2)
     return stats_dict
 
@@ -42,7 +42,10 @@ def room_wise_stats():
 def resource_hours(events):
     total_utilized_time = 0
     for event in events:
-        diff = event.end_dateTime - event.start_dateTime
+        if event.end_dateTime != None:
+            diff = event.end_dateTime - event.start_dateTime
+        else:
+            diff = (event.end_date + timedelta(-1))-event.start_date
         days = diff.days
         days_to_hours = days * 8
         diff_btw_two_times = diff.seconds / 3600

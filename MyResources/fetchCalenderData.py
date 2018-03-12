@@ -11,6 +11,7 @@ from django.contrib.sessions.models import Session
 from django.http import HttpResponse
 from django.shortcuts import redirect
 from django.conf import settings
+
 from rest_framework.decorators import api_view
 
 from MyResources.event import insertEvent, deleteEvent2
