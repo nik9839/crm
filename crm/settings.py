@@ -144,4 +144,4 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-GOOGLE_PUSH_NOTIFICATION_CALLBACK_URL='https://crmtest.pagekite.me/MyResources/watch'
+GOOGLE_PUSH_NOTIFICATION_CALLBACK_URL='https://revolvo.serveo.net//MyResources/watch'
