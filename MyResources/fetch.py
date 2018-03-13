@@ -30,7 +30,7 @@ def room_wise_stats():
         room_dict['location'] = resource_objects[i].buildingId
         room_dict['meetings'] = resource_objects[i].events.count()
         room_dict['capacity'] = resource_objects[i].capacity
-        room_dict['hours'] = round(resource_hours(resource_objects[i].events.all()),2)
+        room_dict['hours'] = round(resource_hours(resource_objects[i].events.filter(start_dateTime__gt=resource_objects[i].resourceCreated)),2)
         room_dict['utilization'] = str(round((room_dict['hours'] / resource_present_hours(resource_objects[i])) * 100,
                                          2))+'%'  # problem within the called function
         items.append(room_dict)
@@ -45,7 +45,7 @@ def resource_hours(events):
         if event.end_dateTime != None:
             diff = event.end_dateTime - event.start_dateTime
         else:
-            diff = (event.end_date + timedelta(-1))-event.start_date
+            diff = event.end_date - event.start_date
         days = diff.days
         days_to_hours = days * 8
         diff_btw_two_times = diff.seconds / 3600
@@ -53,6 +53,11 @@ def resource_hours(events):
         total_utilized_time = total_utilized_time + overall_hours
 
     return total_utilized_time
+
+def resource_hours2(resource_email):
+    abc = Resources.objects.get(resourceEmail=resource_email).events.exclude(start_date__isnull=False).annotate(diff = (F('end_dateTime')- F('start_dateTime'))).first()
+    # (diff.days * 8) + (diff.seconds / 3600)
+    x = abc.diff
 
 
 def resource_present_hours(resource):
@@ -67,6 +72,7 @@ def resource_present_hours(resource):
     return overall_hours
 
 
+
 def overallUtilization():
     total_hours_resources_present = 0
     total_hours_resource_utilized = 0
@@ -74,6 +80,7 @@ def overallUtilization():
 
     for i in range(resource_objects.count()):
         total_hours_resources_present = total_hours_resources_present + resource_present_hours(resource_objects[i])
+        a = resource_objects[i].resourceCreated.date()
         total_hours_resource_utilized = total_hours_resource_utilized + resource_hours(resource_objects[i].events.all())
 
     return (total_hours_resource_utilized / total_hours_resources_present) * 100
