@@ -1,4 +1,4 @@
-from django.db.models import Q
+from django.db.models import Q, F
 
 from MyResources.models import Events, Resources
 from datetime import datetime, timedelta, time
