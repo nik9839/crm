@@ -1,4 +1,6 @@
-from django.db.models import Q, F
+from django.db.models import Q, F, Func, Case, When, Value, IntegerField
+from django.db.models.functions import Extract
+from psycopg2._psycopg import INTERVAL
 
 from MyResources.models import Events, Resources
 from datetime import datetime, timedelta, time
