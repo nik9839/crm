@@ -56,11 +56,28 @@ def resource_hours(events):
 
     return total_utilized_time
 
-def resource_hours2(resource_email):
-    abc = Resources.objects.get(resourceEmail=resource_email).events.exclude(start_date__isnull=False).annotate(diff = (F('end_dateTime')- F('start_dateTime'))).first()
-    # (diff.days * 8) + (diff.seconds / 3600)
-    x = abc.diff
 
+def resource_hours2(resource_email):
+    abc = Resources.objects.get(resourceEmail=resource_email).events.exclude(start_date__isnull=True).annotate(
+        duration=Extract((Func(F('end_date'), F('start_date'), function='age')), 'day')).first()
+    x = abc.duration
+    xyz = Resources.objects.get(resourceEmail=resource_email).events.annotate(
+        duration=Case(
+            When(start_date__isnull=True,
+                 then=Value(
+                     Func(Extract((Func(F('end_date'), F('start_date'), function='age')), 'day'), 8, function='sum') +
+                     Extract((Func(F('end_date'), F('start_date'), function='age')), 'hour'),
+                     output_field=IntegerField())
+                 ),
+            When(start_date__isnull=False,
+                 then=Value(Extract((Func(F('end_dateTime'), F('start_dateTime'), function='age')), 'day') * 8,
+                            output_field=IntegerField()))
+        ),
+    ).first()
+
+    # (diff.days * 8) + (diff.seconds / 3600)
+    print('ok')
+    return 0
 
 def resource_present_hours(resource):
     created = resource.resourceCreated
@@ -83,7 +100,7 @@ def overallUtilization():
     for i in range(resource_objects.count()):
         total_hours_resources_present = total_hours_resources_present + resource_present_hours(resource_objects[i])
         a = resource_objects[i].resourceCreated.date()
-        total_hours_resource_utilized = total_hours_resource_utilized + resource_hours(resource_objects[i].events.all())
+        total_hours_resource_utilized = total_hours_resource_utilized + resource_hours2(resource_objects[i].resourceEmail)
 
     return (total_hours_resource_utilized / total_hours_resources_present) * 100
 
