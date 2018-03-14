@@ -12,3 +12,4 @@ uwsgi==2.0.17
 oauth2client == 3.0.0
 git+git://github.com/google/google-api-python-client.git@cb2ce4f35c31f8f3abea14f57f9fbf96cbaf0c06
 git+git://github.com/django-recurrence/django-recurrence.git@da5bcacb2c14f1cdcaaeb9228a8a58a189734bce
+django-cors-headers==2.1.0
