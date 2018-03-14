@@ -25,6 +25,7 @@ def room_wise_stats(sDate,eDate):
     items = []
     resource_objects = Resources.objects.all()
 
+    resorce_present = resource_present_hours(sDate,eDate)
     for i in range(resource_objects.count()):
         room_dict = dict()
         room_dict['email'] = resource_objects[i].resourceEmail
@@ -34,7 +35,7 @@ def room_wise_stats(sDate,eDate):
         room_dict['meetings'] = resource_objects[i].events.filter(Q(start_dateTime__gte=sDate , end_dateTime__lte=eDate) | Q(start_date__gte=dateutil.parser.parse(sDate).date(), end_date__lte=dateutil.parser.parse(eDate).date())).count()
         room_dict['capacity'] = resource_objects[i].capacity
         room_dict['hours'] = round(resource_hours2(resource_objects[i].resourceEmail,sDate,eDate),2)
-        room_dict['utilization'] = str(round((room_dict['hours'] / resource_present_hours(resource_objects[i],sDate,eDate)) * 100,
+        room_dict['utilization'] = str(round((room_dict['hours'] / resorce_present) * 100,
                                          2))+'%'
         items.append(room_dict)
 
@@ -75,7 +76,7 @@ def resource_hours2(resource_email,sDate,eDate):
         total_time=0
     return total_time
 
-def resource_present_hours(resource,sDate,eDate):
+def resource_present_hours(sDate,eDate):
     # created = resource.resourceCreated
     # now = timezone.now()
     # diff = now - created  # problem in calculating diff due to conflicting timeZone offsets
@@ -99,9 +100,9 @@ def overallUtilization(sDate,eDate):
     total_hours_resource_utilized = 0
     resource_objects = Resources.objects.all()
 
+    resource_present = resource_present_hours(sDate,eDate)
     for i in range(resource_objects.count()):
-        total_hours_resources_present = total_hours_resources_present + resource_present_hours(resource_objects[i],sDate,eDate)
-        #total_hours_resource_utilized = total_hours_resource_utilized + resource_hours(resource_objects[i].events.all())
+        total_hours_resources_present = total_hours_resources_present + resource_present
         total_hours_resource_utilized = total_hours_resource_utilized + resource_hours2(resource_objects[i].resourceEmail,sDate,eDate)
 
     return (total_hours_resource_utilized / total_hours_resources_present) * 100
