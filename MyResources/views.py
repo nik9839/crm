@@ -10,6 +10,8 @@ import random
 
 # Create your views here.
 
+user_name = 'nikhil'
+dashboard_password = '1234'
 
 # Issue of multiple notification for same change
 @api_view(['GET', 'POST'])
@@ -21,6 +23,16 @@ def notify(request):
         get_changes(resource_email)
     return Response(status=HTTP_202_ACCEPTED)
 
+@api_view(['GET', 'POST'])
+def dashboard_login(request):
+    response = dict()
+    response['isValid'] = False
+    if user_name == request.data['username'] and  dashboard_password == request.data['password']:
+        response['isValid']= True
+        response['imageUrl']='https://indiasmosttrustedcompaniesawards.com/wp-content/uploads/2017/09/DB-Corp-Ltd.Dainik-Bhaskar-Group.jpg'
+        return  Response(response,status=HTTP_202_ACCEPTED)
+    else:
+        return  Response(response,status=HTTP_202_ACCEPTED)
 
 class AddResource(APIView):
     def post(self, request):
