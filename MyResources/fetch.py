@@ -32,7 +32,7 @@ def room_wise_stats(sDate,eDate):
         room_dict['room_name'] = resource_objects[i].resourceName
         room_dict['calender_name'] = resource_objects[i].generatedResourceName
         room_dict['location'] = resource_objects[i].buildingId
-        room_dict['meetings'] = resource_objects[i].events.filter(Q(start_dateTime__gte=sDate , end_dateTime__lte=eDate) | Q(start_date__gte=dateutil.parser.parse(sDate).date(), end_date__lte=dateutil.parser.parse(eDate).date())).count()
+        room_dict['meetings'] = resource_objects[i].events.filter(Q(start_dateTime__gte=sDate , end_dateTime__lte=eDate) | Q(start_date__gte=dateutil.parser.parse(sDate).date(), end_date__lt=dateutil.parser.parse(eDate).date())).count()
         room_dict['capacity'] = resource_objects[i].capacity
         room_dict['hours'] = round(resource_hours2(resource_objects[i].resourceEmail,sDate,eDate),2)
         room_dict['utilization'] = str(round((room_dict['hours'] / resorce_present) * 100,
