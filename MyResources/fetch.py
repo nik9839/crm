@@ -205,13 +205,7 @@ def getMeetingsOfRoomOfaDay(resource_email):
                                                                                         month=time.month, day=time.day)
                         meeting_dict['end_dateTime'] = meeting.end_dateTime.replace(year=time.year,
                                                                                     month=time.month, day=time.day)
-                        # diff = meeting.end_dateTime.date() - meeting.start_dateTime.date()
-                        # if diff == 0:
-                        #
-                        # else:
-                        #     meeting_dict['end_dateTime'] = meeting.end_dateTime.replace(year=time.year,
-                        #                                                                 month=time.month,
-                        #                                                                 day=time.day + 1)
+
                     meeting_dict['location'] = meeting.location
                     meeting_dict['creator'] = meeting.creator
                     items.append(meeting_dict)
@@ -252,8 +246,9 @@ def room_details():
 
     for i in range(len(rooms)):
         room_dictionary = dict()
-        rooms_dictionary['calenderName'] = rooms[i].generatedResourceName
-        room_dictionary['name'] = rooms[i].roomName
+        room_dictionary['calenderName'] = rooms[i].generatedResourceName
+        room_dictionary['name'] = rooms[i].resourceName
+        room_dictionary['username'] = rooms[i].roomLoginName
         room_dictionary['password'] = rooms[i].roomPassword
         room_dictionary['capacity'] = rooms[i].capacity
         items.append(room_dictionary)
@@ -262,4 +257,3 @@ def room_details():
 
     return rooms_dictionary
 
-#def generate_autn_token():
