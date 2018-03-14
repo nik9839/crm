@@ -135,7 +135,9 @@ def getMeetingsOfRoomOfaDay(resource_email):
     today_date = timezone.datetime.today()
     try:
         #meetings = resource_obj.events.filter(Q(end_dateTime__date=today_date,start_dateTime__lte=timezone.now())| Q(end_date__gte=today_date,start_date__lte=today_date)).order_by('start_dateTime')
-        meetings = resource_obj.events.exclude(recurr__isnull=False).filter(Q(end_dateTime__gte=timezone.now(),end_dateTime__lte=timezone.now() + timedelta(1)) | Q(end_dateTime__gte=timezone.now(),start_dateTime__lte=timezone.now()) |Q(end_date__gt=today_date,start_date__lte=today_date)).order_by('start_dateTime')
+        local_tz = pytz.timezone('Asia/Kolkata')
+        dt=timezone.now().astimezone(local_tz).replace(hour=23,minute=59,second=59)
+        meetings = resource_obj.events.exclude(recurr__isnull=False).filter(Q(end_dateTime__gte=timezone.now(),end_dateTime__lte=dt) | Q(end_dateTime__gte=timezone.now(),start_dateTime__lte=timezone.now()) | Q(start_dateTime__gte= timezone.now(), start_dateTime__lte= dt,end_dateTime__gte= dt) | Q(end_date__gt=today_date,start_date__lte=today_date)).order_by('start_dateTime')
 
     except Exception as e:
         print(e)
