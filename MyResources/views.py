@@ -52,13 +52,25 @@ def test(request):
 
 class OverallStats(APIView):
     def post(self, request):
-        return Response(overallStatsFunction(request.data['sDate'],request.data['eDate']), status=HTTP_202_ACCEPTED)
+        if request.data['sDate'] == '':
+            local_tz = pytz.timezone('Asia/Kolkata')
+            sDate= str(Resources.objects.all()[0].resourceCreated)
+            eDate = str(timezone.now().astimezone(local_tz).replace(hour=23, minute=59, second=59))
+            return Response(overallStatsFunction(sDate, eDate),
+                            status=HTTP_202_ACCEPTED)
+        else:
+            return Response(overallStatsFunction(request.data['sDate'],request.data['eDate']), status=HTTP_202_ACCEPTED)
 
 
 class RoomStats(APIView):
     def post(self, request):
-        return Response(room_wise_stats(request.data['sDate'],request.data['eDate']), status=HTTP_202_ACCEPTED)
-
+        if request.data['sDate'] == '':
+            local_tz = pytz.timezone('Asia/Kolkata')
+            sDate = str(Resources.objects.all()[0].resourceCreated)
+            eDate = str(timezone.now().astimezone(local_tz).replace(hour=23, minute=59, second=59))
+            return Response(room_wise_stats(sDate,eDate), status=HTTP_202_ACCEPTED)
+        else:
+            return Response(room_wise_stats(request.data['sDate'], request.data['eDate']), status=HTTP_202_ACCEPTED)
 
 class Meetings(APIView):
     def post(self, request):
