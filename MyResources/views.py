@@ -51,13 +51,13 @@ def test(request):
 
 
 class OverallStats(APIView):
-    def get(self, request):
-        return Response(overallStatsFunction(), status=HTTP_202_ACCEPTED)
+    def post(self, request):
+        return Response(overallStatsFunction(request.data['sDate'],request.data['eDate']), status=HTTP_202_ACCEPTED)
 
 
 class RoomStats(APIView):
-    def get(self, request):
-        return Response(room_wise_stats(), status=HTTP_202_ACCEPTED)
+    def post(self, request):
+        return Response(room_wise_stats(request.data['sDate'],request.data['eDate']), status=HTTP_202_ACCEPTED)
 
 
 class Meetings(APIView):
