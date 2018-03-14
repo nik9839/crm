@@ -58,32 +58,33 @@ def resource_hours(events):
     return total_utilized_time
 
 
-def resource_hours2(resource_email):
-    abc = Resources.objects.get(resourceEmail=resource_email).events.exclude(start_date__isnull=True).annotate(
-        duration=Extract((Func(F('end_date'), F('start_date'), function='age')), 'day')).first()
-    x = abc.duration
-    xyz = Resources.objects.get(resourceEmail=resource_email).events.annotate(
-        duration=Case(
+def resource_hours2(resource_email,sDate,eDate):
+
+    total_time =  Resources.objects.get(resourceEmail=resource_email).events.filter(Q(start_dateTime__gte=sDate , end_dateTime__lte=eDate) | Q(start_date__gte=dateutil.parser.parse(sDate).date(), end_date__lte=dateutil.parser.parse(eDate).date())).aggregate( time = Sum(Case(
             When(start_date__isnull=True,
-                 then=Value(
-                     Func(Extract((Func(F('end_date'), F('start_date'), function='age')), 'day'), 8, function='sum') +
-                     Extract((Func(F('end_date'), F('start_date'), function='age')), 'hour'),
-                     output_field=IntegerField())
+                 then=Seconds(F('end_dateTime') - F('start_dateTime'))/3600
                  ),
             When(start_date__isnull=False,
-                 then=Value(Extract((Func(F('end_dateTime'), F('start_dateTime'), function='age')), 'day') * 8,
-                            output_field=IntegerField()))
-        ),
-    ).first()
+                 then=Extract((Func(F('end_date'), F('start_date'), function='age')), 'day') * 8
+                 ),
+            output_field=IntegerField()
+            ),
+    )).get('time',0)
 
-    # (diff.days * 8) + (diff.seconds / 3600)
-    print('ok')
-    return 0
+    if total_time is None:
+        total_time=0
+    return total_time
 
-def resource_present_hours(resource):
-    created = resource.resourceCreated
-    now = timezone.now()
-    diff = now - created  # problem in calculating diff due to conflicting timeZone offsets
+def resource_present_hours(resource,sDate,eDate):
+    # created = resource.resourceCreated
+    # now = timezone.now()
+    # diff = now - created  # problem in calculating diff due to conflicting timeZone offsets
+    # days = diff.days
+    # days_to_hours = days * 8  # assuming 8 workings hours a day
+    # diff_btw_two_times = diff.seconds / 3600
+    # overall_hours = days_to_hours + diff_btw_two_times
+
+    diff = dateutil.parser.parse(eDate) - dateutil.parser.parse(sDate)  # problem in calculating diff due to conflicting timeZone offsets
     days = diff.days
     days_to_hours = days * 8  # assuming 8 workings hours a day
     diff_btw_two_times = diff.seconds / 3600
@@ -93,15 +94,15 @@ def resource_present_hours(resource):
 
 
 
-def overallUtilization():
+def overallUtilization(sDate,eDate):
     total_hours_resources_present = 0
     total_hours_resource_utilized = 0
     resource_objects = Resources.objects.all()
 
     for i in range(resource_objects.count()):
-        total_hours_resources_present = total_hours_resources_present + resource_present_hours(resource_objects[i])
-        a = resource_objects[i].resourceCreated.date()
-        total_hours_resource_utilized = total_hours_resource_utilized + resource_hours2(resource_objects[i].resourceEmail)
+        total_hours_resources_present = total_hours_resources_present + resource_present_hours(resource_objects[i],sDate,eDate)
+        #total_hours_resource_utilized = total_hours_resource_utilized + resource_hours(resource_objects[i].events.all())
+        total_hours_resource_utilized = total_hours_resource_utilized + resource_hours2(resource_objects[i].resourceEmail,sDate,eDate)
 
     return (total_hours_resource_utilized / total_hours_resources_present) * 100
 
