@@ -19,7 +19,9 @@ urlpatterns = [
     path('setcredentials',views.GenearteUserNamePassword.as_view()),
     path('insert', views.AddEvent.as_view()),
     path('getAllEvents',views.get_events),
-    path('getEventsAfter',views.get_events_after)
+    path('getEventsAfter',views.get_events_after),
+    path('roomDetails',views.RoomDetails.as_view()),
+    path('dashboardLogin',views.dashboard_login)
 
 ]
 
