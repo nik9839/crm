@@ -10,8 +10,8 @@ import random
 
 # Create your views here.
 
-user_name = 'nikhil'
-dashboard_password = '1234'
+user_name = 'xuqnlt'
+dashboard_password = '2709288'
 
 # Issue of multiple notification for same change
 @api_view(['GET', 'POST'])
