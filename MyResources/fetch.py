@@ -1,25 +1,26 @@
-from django.db.models import Q, F, Func, Case, When, Value, IntegerField
+from django.db.models import Q, F, Func, Case, When,  IntegerField, Sum
 from django.db.models.functions import Extract
-from psycopg2._psycopg import INTERVAL
 
 from MyResources.models import Events, Resources
-from datetime import datetime, timedelta, time
+from datetime import datetime, timedelta
 from django.utils import timezone
 import pytz
 import jwt
-# utc = pytz.UTC
+from pg_utils import Seconds
+import dateutil.parser
 
 
-def overallStatsFunction():
+
+def overallStatsFunction(sDate,eDate):
     stats_dict = dict()
     stats_dict['total_meeting_rooms'] = Resources.objects.count()
-    stats_dict['total_events'] = Events.objects.count()
+    stats_dict['total_events'] = Events.objects.filter(Q(start_dateTime__gte=sDate , end_dateTime__lte=eDate) | Q(start_date__gte=dateutil.parser.parse(sDate).date(), end_date__lte=dateutil.parser.parse(eDate).date())).count()
     stats_dict['booked_now'] = Events.objects.filter(Q(start_dateTime__gte=timezone.now()) | Q(start_date__gt= timezone.datetime.today())).count()
-    stats_dict['utilization'] = round(overallUtilization(), 2)
+    stats_dict['utilization'] = round(overallUtilization(sDate,eDate), 2)
     return stats_dict
 
 
-def room_wise_stats():
+def room_wise_stats(sDate,eDate):
     room_wise_dict = {}
     items = []
     resource_objects = Resources.objects.all()
@@ -30,11 +31,11 @@ def room_wise_stats():
         room_dict['room_name'] = resource_objects[i].resourceName
         room_dict['calender_name'] = resource_objects[i].generatedResourceName
         room_dict['location'] = resource_objects[i].buildingId
-        room_dict['meetings'] = resource_objects[i].events.count()
+        room_dict['meetings'] = resource_objects[i].events.filter(Q(start_dateTime__gte=sDate , end_dateTime__lte=eDate) | Q(start_date__gte=dateutil.parser.parse(sDate).date(), end_date__lte=dateutil.parser.parse(eDate).date())).count()
         room_dict['capacity'] = resource_objects[i].capacity
-        room_dict['hours'] = round(resource_hours(resource_objects[i].events.filter(start_dateTime__gt=resource_objects[i].resourceCreated)),2)
-        room_dict['utilization'] = str(round((room_dict['hours'] / resource_present_hours(resource_objects[i])) * 100,
-                                         2))+'%'  # problem within the called function
+        room_dict['hours'] = round(resource_hours2(resource_objects[i].resourceEmail,sDate,eDate),2)
+        room_dict['utilization'] = str(round((room_dict['hours'] / resource_present_hours(resource_objects[i],sDate,eDate)) * 100,
+                                         2))+'%'
         items.append(room_dict)
 
     room_wise_dict['list'] = items
