@@ -12,9 +12,10 @@ import dateutil.parser
 
 
 def overallStatsFunction(sDate,eDate):
+    local_tz = pytz.timezone('Asia/Kolkata')
     stats_dict = dict()
     stats_dict['total_meeting_rooms'] = Resources.objects.count()
-    stats_dict['total_events'] = Events.objects.filter(Q(start_dateTime__gte=sDate , end_dateTime__lte=eDate) | Q(start_date__gte=dateutil.parser.parse(sDate).date(), end_date__lte=dateutil.parser.parse(eDate).date())).count()
+    stats_dict['total_events'] = Events.objects.filter(Q(start_dateTime__gte=sDate , end_dateTime__lte=eDate) | Q(start_date__gte=dateutil.parser.parse(sDate).astimezone(local_tz).date(), end_date__lte=dateutil.parser.parse(eDate).astimezone(local_tz).date())).count()
     stats_dict['booked_now'] = Events.objects.filter(Q(start_dateTime__gte=timezone.now()) | Q(start_date__gt= timezone.datetime.today())).count()
     stats_dict['utilization'] = round(overallUtilization(sDate,eDate), 2)
     return stats_dict
@@ -25,6 +26,8 @@ def room_wise_stats(sDate,eDate):
     items = []
     resource_objects = Resources.objects.all()
 
+    local_tz = pytz.timezone('Asia/Kolkata')
+
     resorce_present = resource_present_hours(sDate,eDate)
     for i in range(resource_objects.count()):
         room_dict = dict()
@@ -32,7 +35,7 @@ def room_wise_stats(sDate,eDate):
         room_dict['room_name'] = resource_objects[i].resourceName
         room_dict['calender_name'] = resource_objects[i].generatedResourceName
         room_dict['location'] = resource_objects[i].buildingId
-        room_dict['meetings'] = resource_objects[i].events.filter(Q(start_dateTime__gte=sDate , end_dateTime__lte=eDate) | Q(start_date__gte=dateutil.parser.parse(sDate).date(), end_date__lte=dateutil.parser.parse(eDate).date())).count()
+        room_dict['meetings'] = resource_objects[i].events.filter(Q(start_dateTime__gte=sDate , end_dateTime__lte=eDate) | Q(start_date__gte=dateutil.parser.parse(sDate).astimezone(local_tz).date(), end_date__lte=dateutil.parser.parse(eDate).astimezone(local_tz).date())).count()
         room_dict['capacity'] = resource_objects[i].capacity
         room_dict['hours'] = resource_hours2(resource_objects[i].resourceEmail,sDate,eDate)
         room_dict['utilization'] = str(round((room_dict['hours'] / resorce_present) * 100,
@@ -60,8 +63,8 @@ def resource_hours(events):
 
 
 def resource_hours2(resource_email,sDate,eDate):
-
-    total_time =  Resources.objects.get(resourceEmail=resource_email).events.filter(Q(start_dateTime__gte=sDate , end_dateTime__lte=eDate) | Q(start_date__gte=dateutil.parser.parse(sDate).date(), end_date__lte=dateutil.parser.parse(eDate).date())).aggregate( time = Sum(Case(
+    local_tz = pytz.timezone('Asia/Kolkata')
+    total_time =  Resources.objects.get(resourceEmail=resource_email).events.filter(Q(start_dateTime__gte=sDate , end_dateTime__lte=eDate) | Q(start_date__gte=dateutil.parser.parse(sDate).astimezone(local_tz).date(), end_date__lte=dateutil.parser.parse(eDate).astimezone(local_tz).date())).aggregate( time = Sum(Case(
             When(start_date__isnull=True,
                  then=Seconds(F('end_dateTime') - F('start_dateTime'))
                  ),
