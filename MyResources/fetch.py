@@ -34,7 +34,7 @@ def room_wise_stats(sDate,eDate):
         room_dict['location'] = resource_objects[i].buildingId
         room_dict['meetings'] = resource_objects[i].events.filter(Q(start_dateTime__gte=sDate , end_dateTime__lte=eDate) | Q(start_date__gte=dateutil.parser.parse(sDate).date(), end_date__lt=dateutil.parser.parse(eDate).date())).count()
         room_dict['capacity'] = resource_objects[i].capacity
-        room_dict['hours'] = round(resource_hours2(resource_objects[i].resourceEmail,sDate,eDate),2)
+        room_dict['hours'] = resource_hours2(resource_objects[i].resourceEmail,sDate,eDate)
         room_dict['utilization'] = str(round((room_dict['hours'] / resorce_present) * 100,
                                          2))+'%'
         items.append(room_dict)
@@ -63,7 +63,7 @@ def resource_hours2(resource_email,sDate,eDate):
 
     total_time =  Resources.objects.get(resourceEmail=resource_email).events.filter(Q(start_dateTime__gte=sDate , end_dateTime__lte=eDate) | Q(start_date__gte=dateutil.parser.parse(sDate).date(), end_date__lt=dateutil.parser.parse(eDate).date())).aggregate( time = Sum(Case(
             When(start_date__isnull=True,
-                 then=Seconds(F('end_dateTime') - F('start_dateTime'))/3600
+                 then=Seconds(F('end_dateTime') - F('start_dateTime'))
                  ),
             When(start_date__isnull=False,
                  then=Extract((Func(F('end_date'), F('start_date'), function='age')), 'day') * 8
@@ -74,6 +74,8 @@ def resource_hours2(resource_email,sDate,eDate):
 
     if total_time is None:
         total_time=0
+    else:
+        total_time=round(total_time/3600,2)
     return total_time
 
 def resource_present_hours(sDate,eDate):
