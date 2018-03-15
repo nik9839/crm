@@ -61,12 +61,12 @@ def resource_hours(events):
 
 def resource_hours2(resource_email,sDate,eDate):
 
-    total_time =  Resources.objects.get(resourceEmail=resource_email).events.filter(Q(start_dateTime__gte=sDate , end_dateTime__lte=eDate) | Q(start_date__gte=dateutil.parser.parse(sDate).date(), end_date__lt=dateutil.parser.parse(eDate).date())).aggregate( time = Sum(Case(
+    total_time =  Resources.objects.get(resourceEmail=resource_email).events.filter(Q(start_dateTime__gte=sDate , end_dateTime__lte=eDate) | Q(start_date__gte=dateutil.parser.parse(sDate).date(), end_date__lte=dateutil.parser.parse(eDate).date())).aggregate( time = Sum(Case(
             When(start_date__isnull=True,
                  then=Seconds(F('end_dateTime') - F('start_dateTime'))
                  ),
             When(start_date__isnull=False,
-                 then=Extract((Func(F('end_date'), F('start_date'), function='age')), 'day') * 8
+                 then=Extract((Func(F('end_date'), F('start_date'), function='age')), 'day') * 8 * 3600
                  ),
             output_field=IntegerField()
             ),
