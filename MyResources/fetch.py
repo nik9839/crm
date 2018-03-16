@@ -11,21 +11,25 @@ import dateutil.parser
 
 
 
-def overallStatsFunction(sDate,eDate):
+def overallStatsFunction(sDate,eDate,searchQuery):
     local_tz = pytz.timezone('Asia/Kolkata')
     stats_dict = dict()
-    stats_dict['total_meeting_rooms'] = Resources.objects.count()
+    stats_dict['total_meeting_rooms'] = Resources.objects.filter(generatedResourceName__icontains=searchQuery).count()
     stats_dict['total_events'] = Events.objects.filter(Q(start_dateTime__gte=sDate , end_dateTime__lte=eDate) | Q(start_date__gte=dateutil.parser.parse(sDate).astimezone(local_tz).date(), end_date__lte=dateutil.parser.parse(eDate).astimezone(local_tz).date())).count()
     stats_dict['booked_now'] = Events.objects.filter(Q(start_dateTime__gte=timezone.now()) | Q(start_date__gt= timezone.datetime.today())).count()
-    stats_dict['utilization'] = round(overallUtilization(sDate,eDate), 2)
+    stats_dict['utilization'], stats_dict['hours'] = overallUtilization(sDate,eDate,searchQuery)
     return stats_dict
 
 
-def room_wise_stats(sDate,eDate):
+def room_wise_stats(sDate,eDate,text):
     room_wise_dict = {}
     items = []
-    resource_objects = Resources.objects.all()
+    # if len(locations)== 0:
+    #     resource_objects = Resources.objects.all()
+    # else:
+    #     resource_objects = Resources.objects.filter(buildingId__in=locations)
 
+    resource_objects = Resources.objects.filter(Q(generatedResourceName__icontains=text))
     local_tz = pytz.timezone('Asia/Kolkata')
 
     resorce_present = resource_present_hours(sDate,eDate)
@@ -100,17 +104,17 @@ def resource_present_hours(sDate,eDate):
 
 
 
-def overallUtilization(sDate,eDate):
+def overallUtilization(sDate,eDate,text):
     total_hours_resources_present = 0
     total_hours_resource_utilized = 0
-    resource_objects = Resources.objects.all()
+    resource_objects = Resources.objects.filter(Q(generatedResourceName__icontains=text))
 
     resource_present = resource_present_hours(sDate,eDate)
     for i in range(resource_objects.count()):
         total_hours_resources_present = total_hours_resources_present + resource_present
         total_hours_resource_utilized = total_hours_resource_utilized + resource_hours2(resource_objects[i].resourceEmail,sDate,eDate)
 
-    return (total_hours_resource_utilized / total_hours_resources_present) * 100
+    return round((total_hours_resource_utilized / total_hours_resources_present) * 100,2),total_hours_resource_utilized
 
 
 def getMeetings(resources_list):

@@ -55,13 +55,17 @@ class OverallStats(APIView):
         local_tz = pytz.timezone('Asia/Kolkata')
         sDate = request.data['sDate']
         eDate = request.data['eDate']
+        try:
+            query = request.data['searchQuery']
+        except Exception:
+            query=''
 
         if request.data['sDate'] == '':
             sDate = str(Resources.objects.all()[0].resourceCreated)
         if request.data['eDate'] == '':
             eDate = str(timezone.now().astimezone(local_tz).replace(hour=23, minute=59, second=59))
 
-        return Response(overallStatsFunction(sDate, eDate),
+        return Response(overallStatsFunction(sDate, eDate,query),
                             status=HTTP_202_ACCEPTED)
 
 
@@ -70,6 +74,10 @@ class RoomStats(APIView):
         local_tz = pytz.timezone('Asia/Kolkata')
         sDate = request.data['sDate']
         eDate = request.data['eDate']
+        try:
+            query = request.data['searchQuery']
+        except Exception:
+            query=''
 
         if request.data['sDate'] == '':
             sDate = str(Resources.objects.all()[0].resourceCreated)
@@ -77,7 +85,7 @@ class RoomStats(APIView):
         if request.data['eDate'] == '':
             eDate = str(timezone.now().astimezone(local_tz).replace(hour=23, minute=59, second=59))
 
-        return Response(room_wise_stats(sDate,eDate), status=HTTP_202_ACCEPTED)
+        return Response(room_wise_stats(sDate,eDate,query), status=HTTP_202_ACCEPTED)
 
 
 class Meetings(APIView):
