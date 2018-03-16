@@ -54,7 +54,7 @@ def resource_hours(events):
         else:
             diff = event.end_date - event.start_date
         days = diff.days
-        days_to_hours = days * 8
+        days_to_hours = days * 24
         diff_btw_two_times = diff.seconds / 3600
         overall_hours = days_to_hours + diff_btw_two_times
         total_utilized_time = total_utilized_time + overall_hours
