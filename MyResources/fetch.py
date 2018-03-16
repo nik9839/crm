@@ -59,7 +59,7 @@ def resource_hours(events):
         else:
             diff = event.end_date - event.start_date
         days = diff.days
-        days_to_hours = days * 24
+        days_to_hours = days * 8
         diff_btw_two_times = diff.seconds / 3600
         overall_hours = days_to_hours + diff_btw_two_times
         total_utilized_time = total_utilized_time + overall_hours
@@ -87,17 +87,9 @@ def resource_hours2(resource_email,sDate,eDate):
     return total_time
 
 def resource_present_hours(sDate,eDate):
-    # created = resource.resourceCreated
-    # now = timezone.now()
-    # diff = now - created  # problem in calculating diff due to conflicting timeZone offsets
-    # days = diff.days
-    # days_to_hours = days * 8  # assuming 8 workings hours a day
-    # diff_btw_two_times = diff.seconds / 3600
-    # overall_hours = days_to_hours + diff_btw_two_times
-
-    diff = dateutil.parser.parse(eDate) - dateutil.parser.parse(sDate)  # problem in calculating diff due to conflicting timeZone offsets
+    diff = dateutil.parser.parse(eDate) - dateutil.parser.parse(sDate)
     days = diff.days
-    days_to_hours = days * 8  # assuming 8 workings hours a day
+    days_to_hours = days * 24  # assuming 8 workings hours a day
     diff_btw_two_times = diff.seconds / 3600
     overall_hours = days_to_hours + diff_btw_two_times
 
