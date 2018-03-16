@@ -44,6 +44,7 @@ def room_wise_stats(sDate,eDate,text):
         room_dict['hours'] = resource_hours2(resource_objects[i].resourceEmail,sDate,eDate)
         room_dict['utilization'] = str(round((room_dict['hours'] / resorce_present) * 100,
                                          2))+'%'
+        room_dict['floor']= resource_objects[i].floorName
         items.append(room_dict)
 
     room_wise_dict['list'] = items
