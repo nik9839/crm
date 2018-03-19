@@ -73,19 +73,24 @@ def resource_hours(events):
 
     return total_utilized_time
 
+
+
 def resource_space_utilzation(sDate,eDate,resource):
-    print(Resources.objects.get(resourceEmail=resource).resourceName)
     local_tz = pytz.timezone('Asia/Kolkata')
-    total_possible_capacity = Resources.objects.get(resourceEmail=resource).events.count() * int(Resources.objects.get(resourceEmail=resource).capacity)
+
+    total_possible_capacity = Resources.objects.get(resourceEmail=resource).events\
+        .filter(Q(start_dateTime__gte=sDate , end_dateTime__lte=eDate) | Q(start_date__gte=dateutil.parser.parse(sDate)
+                                                                           .astimezone(local_tz).date(), end_date__lte=dateutil.parser.parse(eDate)
+                                                                            .astimezone(local_tz).date())).count() * int(Resources.objects.get(resourceEmail=resource).capacity)
     if total_possible_capacity ==0:
         return 0
     total_attendees = Resources.objects.get(resourceEmail=resource).events\
         .filter(Q(start_dateTime__gte=sDate , end_dateTime__lte=eDate) | Q(start_date__gte=dateutil.parser.parse(sDate)
                                                                            .astimezone(local_tz).date(), end_date__lte=dateutil.parser.parse(eDate)
-                                                                           .astimezone(local_tz).date())).annotate(ac=Count('attendees')).aggregate(resource_attendees= Sum('ac')).get('resource_attendees',0)
+                                                                            .astimezone(local_tz).date())).aggregate(a= Sum(Func(F('attendees') ,function='cardinality'))).get('a',0)
     if total_attendees == None:
         total_attendees=0
-    return round(total_attendees/total_possible_capacity,2)
+    return round((total_attendees/total_possible_capacity)*100,2)
 
 
 
