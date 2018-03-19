@@ -27,7 +27,6 @@ def room_stats(sDate,eDate,searchQuery):
     combined_dict = {}
     stats_dict = dict()
     stats_dict['total_meeting_rooms'] = resource_objects.count()
-    stats_dict['utilization'], stats_dict['hours'] = overallUtilization(sDate, eDate, searchQuery)
     total_hour = 0
     total_events = 0
     items = []
