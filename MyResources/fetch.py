@@ -1,4 +1,4 @@
-from django.db.models import Q, F, Func, Case, When,  IntegerField, Sum
+from django.db.models import Q, F, Func, Case, When, IntegerField, Sum, Count
 from django.db.models.functions import Extract
 
 from MyResources.models import Events, Resources
@@ -15,7 +15,7 @@ def overallStatsFunction(sDate,eDate,searchQuery):
     local_tz = pytz.timezone('Asia/Kolkata')
     stats_dict = dict()
     stats_dict['total_meeting_rooms'] = Resources.objects.filter(generatedResourceName__icontains=searchQuery).count()
-    stats_dict['total_events'] = Events.objects.filter(Q(start_dateTime__gte=sDate , end_dateTime__lte=eDate) | Q(start_date__gte=dateutil.parser.parse(sDate).astimezone(local_tz).date(), end_date__lte=dateutil.parser.parse(eDate).astimezone(local_tz).date())).count()
+    stats_dict['total_events'] = Events.objects.filter(resources_used__len__gt= 0).filter(Q(start_dateTime__gte=sDate , end_dateTime__lte=eDate) | Q(start_date__gte=dateutil.parser.parse(sDate).astimezone(local_tz).date(), end_date__lte=dateutil.parser.parse(eDate).astimezone(local_tz).date())).count()
     stats_dict['booked_now'] = Events.objects.filter(Q(start_dateTime__gte=timezone.now()) | Q(start_date__gt= timezone.datetime.today())).count()
     stats_dict['utilization'], stats_dict['hours'] = overallUtilization(sDate,eDate,searchQuery)
     return stats_dict
