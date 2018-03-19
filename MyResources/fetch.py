@@ -29,6 +29,7 @@ def room_wise_stats(sDate,eDate,text):
     # else:
     #     resource_objects = Resources.objects.filter(buildingId__in=locations)
 
+
     resource_objects = Resources.objects.filter(Q(generatedResourceName__icontains=text))
     local_tz = pytz.timezone('Asia/Kolkata')
 
@@ -45,6 +46,7 @@ def room_wise_stats(sDate,eDate,text):
         room_dict['utilization'] = str(round((room_dict['hours'] / resorce_present) * 100,
                                          2))+'%'
         room_dict['floor']= resource_objects[i].floorName
+        #room_dict['space_utlization']= resource_space_utilzation(sDate,eDate,resource_objects[i].resourceEmail)
         items.append(room_dict)
 
     room_wise_dict['list'] = items
