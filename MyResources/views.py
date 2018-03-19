@@ -85,7 +85,7 @@ class RoomStats(APIView):
         if request.data['eDate'] == '':
             eDate = str(timezone.now().astimezone(local_tz).replace(hour=23, minute=59, second=59))
 
-        return Response(room_wise_stats(sDate,eDate,query), status=HTTP_202_ACCEPTED)
+        return Response(room_stats(sDate,eDate,query), status=HTTP_202_ACCEPTED)
 
 
 class Meetings(APIView):
