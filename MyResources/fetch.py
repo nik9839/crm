@@ -49,7 +49,7 @@ def room_stats(sDate,eDate,searchQuery):
 
     stats_dict['total_events']= total_events
     stats_dict['hours'] = round(total_hour,1)
-    stats_dict['utilization'] = round(stats_dict['hours']/(resource_present*stats_dict['total_meeting_rooms']),2)
+    stats_dict['utilization'] = round(stats_dict['hours']/(resource_present*stats_dict['total_meeting_rooms']),2)*100
 
     combined_dict['room'] = items
     combined_dict['overall'] = stats_dict
