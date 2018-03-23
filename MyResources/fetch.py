@@ -101,7 +101,6 @@ def resource_space_utilzation(sDate, eDate, resource):
 def resource_hours2(resource_email, sDate, eDate):
     total_meetings = 0
     local_tz = pytz.timezone('Asia/Kolkata')
-
     queryset = Resources.objects.get(resourceEmail=resource_email).events.exclude(recurr__isnull=False).filter(
         Q(start_dateTime__gte=sDate, end_dateTime__lte=eDate) | Q(
             start_date__gte=dateutil.parser.parse(sDate).astimezone(local_tz).date(),
@@ -144,7 +143,9 @@ def resource_hours2(resource_email, sDate, eDate):
                     recurrences.remove(element)
                 except Exception:
                     print('element already removed')
-            if element > dateutil.parser.parse(eDate).replace(tzinfo=None):
+            if element.replace(hour=meeting.start_dateTime.hour, minute=meeting.start_dateTime.minute,
+                               second=meeting.start_dateTime.second,tzinfo=None) >= dateutil.parser.parse(eDate).replace(
+                    tzinfo=None):
                 try:
                     recurrences.remove(element)
                 except Exception:
