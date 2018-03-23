@@ -37,28 +37,51 @@ def insertEvent(resource_email, eventobject):
                 resources_used_list.append(eventobject['attendees'][i]['email'])
     event = Events(event_id=eventobject['id'], created=eventobject.get('created'), updated=eventobject.get('updated'),
                    summary=eventobject.get('summary', ''),
-                   description=eventobject.get('description', ''), start_dateTime=eventobject.get('start',{}).get('dateTime',None),
-                   end_dateTime=eventobject.get('end',{}).get('dateTime', None), location=eventobject.get('location',None),
+                   description=eventobject.get('description', ''),
+                   start_dateTime=eventobject.get('start', {}).get('dateTime', None),
+                   end_dateTime=eventobject.get('end', {}).get('dateTime', None),
+                   location=eventobject.get('location', None),
                    event_dump=eventobject, attendees=attendees_list, resources_used=resources_used_list,
-                   creator=eventobject.get('creator',{}).get('email',None), start_date= eventobject.get('start',{}).get('date',None),
-                   end_date=eventobject.get('end',{}).get('date', None),
-                   recurr= eventobject.get('recurrence',[None])[0])
+                   creator=eventobject.get('creator', {}).get('email', None),
+                   start_date=eventobject.get('start', {}).get('date', None),
+                   end_date=eventobject.get('end', {}).get('date', None),
+                   recurr=eventobject.get('recurrence', [None])[0], status=eventobject.get('status'))
 
+    if eventobject.get('recurringEventId') is not None:
+        parent = Events.objects.get(event_id=eventobject.get('recurringEventId'))
+        event.parent_event = parent
+        if eventobject.get('start', {}).get('dateTime', None) is None:
+            parent.changed_dates.append(eventobject.get('start', {}).get('date', None))
+        else:
+            tz = pytz.timezone('Asia/Kolkata')
+            parent.changed_dates.append(
+                dateutil.parser.parse(eventobject.get('start', {}).get('dateTime', None)).astimezone(tz).date())
+        parent.save()
     event.save()
+
     for j in range(len(resources_used_list)):
         resource = Resources.objects.get(resourceEmail=resources_used_list[j])
         resource.events.add(event)
         resource.save()
 
 
-
-
-def deleteEvent2(resource_email,eventobject):
+def deleteEvent2(resource_email, eventobject):
     if Events.objects.filter(event_id=eventobject['id']).exists():
         event = Events.objects.get(event_id=eventobject['id'])
 
         Resources.objects.get(resourceEmail=resource_email).events.remove(event)
         event.resources_used.remove(resource_email)
+        event.status = eventobject['status']
         event.save()
+        return 'deleted'
 
+    if eventobject.get('recurringEventId',None) is not None:
+        parent = Events.objects.get(event_id=eventobject.get('recurringEventId'))
+        if eventobject.get('originalStartTime', {}).get('dateTime', None) is None:
+            parent.changed_dates.append(eventobject.get('originalStartTime', {}).get('date', None))
+        else:
+            tz = pytz.timezone('Asia/Kolkata')
+            parent.changed_dates.append(
+                dateutil.parser.parse(eventobject.get('originalStartTime', {}).get('dateTime', None)).astimezone(tz).date())
+        parent.save()
 
