@@ -33,27 +33,26 @@ def room_stats(sDate, eDate, searchQuery):
     total_hour = 0
     total_events = 0
     items = []
-    resource_present = resource_present_hours(sDate,eDate)
+    resource_present = resource_present_hours(sDate, eDate)
     for i in range(resource_objects.count()):
         room_dict = dict()
         room_dict['email'] = resource_objects[i].resourceEmail
         room_dict['room_name'] = resource_objects[i].resourceName
         room_dict['calender_name'] = resource_objects[i].generatedResourceName
         room_dict['location'] = resource_objects[i].buildingId
-        room_dict['meetings'] = resource_objects[i].events.filter(Q(start_dateTime__gte=sDate , end_dateTime__lte=eDate) | Q(start_date__gte=dateutil.parser.parse(sDate).astimezone(local_tz).date(), end_date__lte=dateutil.parser.parse(eDate).astimezone(local_tz).date())).count()
         room_dict['capacity'] = resource_objects[i].capacity
-        room_dict['hours'] = resource_hours2(resource_objects[i].resourceEmail,sDate,eDate)
-        room_dict['utilization'] = str(round((room_dict['hours'] / resource_present) * 100,
-                                    2))
-        room_dict['floor']= resource_objects[i].floorName
-        room_dict['space_utilization'] = resource_space_utilzation(sDate,eDate,resource_objects[i].resourceEmail)
+        room_dict['hours'], room_dict['meetings'] = resource_hours2(resource_objects[i].resourceEmail, sDate, eDate)
+        room_dict['utilization'] = str(round((room_dict['hours'] / resource_present) * 100))
+        room_dict['floor'] = resource_objects[i].floorName
+        room_dict['space_utilization'] = resource_space_utilzation(sDate, eDate, resource_objects[i].resourceEmail)
         items.append(room_dict)
         total_hour = total_hour + room_dict['hours']
         total_events = total_events + room_dict['meetings']
 
-    stats_dict['total_events']= total_events
-    stats_dict['hours'] = total_hour
-    stats_dict['utilization'] = round(stats_dict['hours']/(resource_present*stats_dict['total_meeting_rooms']),2)
+    stats_dict['total_events'] = total_events
+    stats_dict['hours'] = round(total_hour, 2)
+    stats_dict['utilization'] = round(stats_dict['hours'] / (resource_present * stats_dict['total_meeting_rooms']),
+                                      2) * 100
 
     combined_dict['room'] = items
     combined_dict['overall'] = stats_dict
