@@ -5,6 +5,7 @@ from recurrence.fields import RecurrenceField
 
 # Create your models here.
 
+
 class Events(models.Model):
     event_id = models.CharField(max_length=500, unique=True)
     created = models.DateTimeField(null=True)
@@ -21,6 +22,9 @@ class Events(models.Model):
     start_date = models.DateField(null=True)
     end_date = models.DateField(null=True)
     recurr = RecurrenceField(null=True)
+    status = models.TextField(null=True)
+    changed_dates = ArrayField(models.DateField(), blank=True, default=[])
+    parent_event = models.ForeignKey('self', on_delete=models.CASCADE,null=True,blank=True,to_field='event_id')
 
 
 class Resources(models.Model):
