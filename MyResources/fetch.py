@@ -75,46 +75,94 @@ def resource_hours(events):
     return total_utilized_time
 
 
-
-def resource_space_utilzation(sDate,eDate,resource):
+def resource_space_utilzation(sDate, eDate, resource):
     local_tz = pytz.timezone('Asia/Kolkata')
 
-    total_possible_capacity = Resources.objects.get(resourceEmail=resource).events\
-        .filter(Q(start_dateTime__gte=sDate , end_dateTime__lte=eDate) | Q(start_date__gte=dateutil.parser.parse(sDate)
-                                                                           .astimezone(local_tz).date(), end_date__lte=dateutil.parser.parse(eDate)
-                                                                            .astimezone(local_tz).date())).count() * int(Resources.objects.get(resourceEmail=resource).capacity)
-    if total_possible_capacity ==0:
+    total_possible_capacity = Resources.objects.get(resourceEmail=resource).events \
+                                  .filter(
+        Q(start_dateTime__gte=sDate, end_dateTime__lte=eDate) | Q(start_date__gte=dateutil.parser.parse(sDate)
+                                                                  .astimezone(local_tz).date(),
+                                                                  end_date__lte=dateutil.parser.parse(eDate)
+                                                                  .astimezone(local_tz).date())).count() * int(
+        Resources.objects.get(resourceEmail=resource).capacity)
+    if total_possible_capacity == 0:
         return 0
-    total_attendees = Resources.objects.get(resourceEmail=resource).events\
-        .filter(Q(start_dateTime__gte=sDate , end_dateTime__lte=eDate) | Q(start_date__gte=dateutil.parser.parse(sDate)
-                                                                           .astimezone(local_tz).date(), end_date__lte=dateutil.parser.parse(eDate)
-                                                                            .astimezone(local_tz).date())).aggregate(a= Sum(Func(F('attendees') ,function='cardinality'))).get('a',0)
+    total_attendees = Resources.objects.get(resourceEmail=resource).events \
+        .filter(Q(start_dateTime__gte=sDate, end_dateTime__lte=eDate) | Q(start_date__gte=dateutil.parser.parse(sDate)
+                                                                          .astimezone(local_tz).date(),
+                                                                          end_date__lte=dateutil.parser.parse(eDate)
+                                                                          .astimezone(local_tz).date())).aggregate(
+        a=Sum(Func(F('attendees'), function='cardinality'))).get('a', 0)
     if total_attendees == None:
-        total_attendees=0
-    return round((total_attendees/total_possible_capacity)*100,2)
+        total_attendees = 0
+    return round((total_attendees / total_possible_capacity) * 100, 2)
 
 
-
-def resource_hours2(resource_email,sDate,eDate):
+def resource_hours2(resource_email, sDate, eDate):
+    total_meetings = 0
     local_tz = pytz.timezone('Asia/Kolkata')
-    total_time =  Resources.objects.get(resourceEmail=resource_email).events.filter(Q(start_dateTime__gte=sDate , end_dateTime__lte=eDate) | Q(start_date__gte=dateutil.parser.parse(sDate).astimezone(local_tz).date(), end_date__lte=dateutil.parser.parse(eDate).astimezone(local_tz).date())).aggregate( time = Sum(Case(
-            When(start_date__isnull=True,
-                 then=Seconds(F('end_dateTime') - F('start_dateTime'))
-                 ),
-            When(start_date__isnull=False,
-                 then=Extract((Func(F('end_date'), F('start_date'), function='age')), 'day') * 8 * 3600
-                 ),
-            output_field=IntegerField()
-            ),
-    )).get('time',0)
 
+    queryset = Resources.objects.get(resourceEmail=resource_email).events.exclude(recurr__isnull=False).filter(
+        Q(start_dateTime__gte=sDate, end_dateTime__lte=eDate) | Q(
+            start_date__gte=dateutil.parser.parse(sDate).astimezone(local_tz).date(),
+            end_date__lte=dateutil.parser.parse(eDate).astimezone(local_tz).date()))
+    total_time = queryset.aggregate(time=Sum(Case(
+        When(start_date__isnull=True,
+             then=Seconds(F('end_dateTime') - F('start_dateTime'))
+             ),
+        When(start_date__isnull=False,
+             then=Extract((Func(F('end_date'), F('start_date'), function='age')), 'day') * 8 * 3600
+             ),
+        output_field=IntegerField()
+    ),
+    )).get('time', 0)
     if total_time is None:
-        total_time=0
-    else:
-        total_time=round(total_time/3600,2)
-    return total_time
+        total_time = 0
+    total_meetings = total_meetings + queryset.count()
+    total_time2 = 0
 
-def resource_present_hours(sDate,eDate):
+    filtered_recurring = Resources.objects.get(resourceEmail=resource_email).events.exclude(recurr__isnull=True)
+    # .filter(
+    # Q(start_dateTime__hour__gt=dateutil.parser.parse(sDate).hour) | (
+    #         Q(start_dateTime__hour=dateutil.parser.parse(sDate).hour) & Q(
+    #     start_dateTime__minute__gte=dateutil.parser.parse(sDate).minute)))
+
+    for meeting in filtered_recurring:
+        recurrences = meeting.recurr.between(
+            dateutil.parser.parse(sDate).astimezone(local_tz).replace(hour=0, minute=0, second=0, microsecond=0,
+                                                                      tzinfo=None),
+            dateutil.parser.parse(eDate).astimezone(local_tz).replace(hour=0, minute=0, second=0, microsecond=0,
+                                                                      tzinfo=None),
+            dtstart=meeting.start_dateTime.astimezone(local_tz).replace(hour=0, minute=0, second=0, microsecond=0,
+                                                                        tzinfo=None),
+            inc=True)
+        for element in recurrences:
+            if element.date() in meeting.changed_dates:
+                recurrences.remove(element)
+            if element < dateutil.parser.parse(sDate).replace(tzinfo=None):
+                try:
+                    recurrences.remove(element)
+                except Exception:
+                    print('element already removed')
+            if element > dateutil.parser.parse(eDate).replace(tzinfo=None):
+                try:
+                    recurrences.remove(element)
+                except Exception:
+                    print('element already removed')
+
+        diff = meeting.end_dateTime - meeting.start_dateTime
+        days_to_hours = diff.days * 24
+        diff_btw_two_times = diff.seconds
+        net_time = days_to_hours * 3600 + diff_btw_two_times
+        total_time2 = total_time2 + len(recurrences) * net_time
+        total_meetings = total_meetings + len(recurrences)
+    total_time = total_time + total_time2
+
+    total_time = round(total_time / 3600, 2)
+    return round(total_time, 2), total_meetings
+
+
+def resource_present_hours(sDate, eDate):
     diff = dateutil.parser.parse(eDate) - dateutil.parser.parse(sDate)
     days = diff.days
     days_to_hours = days * 24  # assuming 8 workings hours a day
@@ -124,18 +172,19 @@ def resource_present_hours(sDate,eDate):
     return overall_hours
 
 
-
-def overallUtilization(sDate,eDate,text):
+def overallUtilization(sDate, eDate, text):
     total_hours_resources_present = 0
     total_hours_resource_utilized = 0
     resource_objects = Resources.objects.filter(Q(generatedResourceName__icontains=text))
 
-    resource_present = resource_present_hours(sDate,eDate)
+    resource_present = resource_present_hours(sDate, eDate)
     for i in range(resource_objects.count()):
         total_hours_resources_present = total_hours_resources_present + resource_present
-        total_hours_resource_utilized = total_hours_resource_utilized + resource_hours2(resource_objects[i].resourceEmail,sDate,eDate)
+        total_hours_resource_utilized = total_hours_resource_utilized + resource_hours2(
+            resource_objects[i].resourceEmail, sDate, eDate)
 
-    return round((total_hours_resource_utilized / total_hours_resources_present) * 100,2),total_hours_resource_utilized
+    return round((total_hours_resource_utilized / total_hours_resources_present) * 100,
+                 2), total_hours_resource_utilized
 
 
 def getMeetings(resources_list):
