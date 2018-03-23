@@ -44,7 +44,7 @@ def get_events(request):
     service = googleapiclient.discovery.build('calendar', 'v3', credentials=credentials, cache_discovery=False)
     for resource in Resources.objects.all():
         try:
-            events = service.events().list(calendarId=resource.resourceEmail).execute()
+            events = service.events().list(calendarId=resource.resourceEmail,orderBy="updated").execute()
             for event in events['items']:
                 try:
                     if event['status'] == "cancelled":

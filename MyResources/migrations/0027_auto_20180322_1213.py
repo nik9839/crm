@@ -4,7 +4,6 @@ import django.contrib.postgres.fields
 from django.db import migrations, models
 import django.db.models.deletion
 
-
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -27,4 +26,5 @@ class Migration(migrations.Migration):
             name='status',
             field=models.TextField(null=True),
         ),
+
     ]
