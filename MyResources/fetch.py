@@ -211,13 +211,17 @@ def getMeetings(resources_list):
 
 
 def getMeetingsOfRoomOfaDay(resource_email):
-    resource_obj =Resources.objects.prefetch_related('events').get(resourceEmail=resource_email)
+    resource_obj = Resources.objects.prefetch_related('events').get(resourceEmail=resource_email)
     today_date = timezone.datetime.today()
     try:
-        #meetings = resource_obj.events.filter(Q(end_dateTime__date=today_date,start_dateTime__lte=timezone.now())| Q(end_date__gte=today_date,start_date__lte=today_date)).order_by('start_dateTime')
+        # meetings = resource_obj.events.filter(Q(end_dateTime__date=today_date,start_dateTime__lte=timezone.now())| Q(end_date__gte=today_date,start_date__lte=today_date)).order_by('start_dateTime')
         local_tz = pytz.timezone('Asia/Kolkata')
-        dt=timezone.now().astimezone(local_tz).replace(hour=23,minute=59,second=59)
-        meetings = resource_obj.events.exclude(recurr__isnull=False).filter(Q(end_dateTime__gte=timezone.now(),end_dateTime__lte=dt) | Q(end_dateTime__gte=timezone.now(),start_dateTime__lte=timezone.now()) | Q(start_dateTime__gte= timezone.now(), start_dateTime__lte= dt,end_dateTime__gte= dt) | Q(end_date__gt=today_date,start_date__lte=today_date)).order_by('start_dateTime')
+        dt = timezone.now().astimezone(local_tz).replace(hour=23, minute=59, second=59)
+        meetings = resource_obj.events.exclude(recurr__isnull=False).filter(
+            Q(end_dateTime__gte=timezone.now(), end_dateTime__lte=dt) | Q(end_dateTime__gte=timezone.now(),
+                                                                          start_dateTime__lte=timezone.now()) | Q(
+                start_dateTime__gte=timezone.now(), start_dateTime__lte=dt, end_dateTime__gte=dt) | Q(
+                end_date__gt=today_date, start_date__lte=today_date)).order_by('start_dateTime')
 
     except Exception as e:
         print(e)
@@ -245,20 +249,31 @@ def getMeetingsOfRoomOfaDay(resource_email):
         meeting_dict['end_dateTime'] = meeting.end_dateTime
         meeting_dict['location'] = meeting.location
         meeting_dict['creator'] = meeting.creator
-        if meeting_dict['start_dateTime']==None:
-            meeting_dict['start_dateTime'] = zone.replace(hour=00,minute=00,second=00)
-            meeting_dict['end_dateTime'] = zone.replace(hour=23,minute=59,second=59)
+        if meeting_dict['start_dateTime'] == None:
+            meeting_dict['start_dateTime'] = zone.replace(hour=00, minute=00, second=00)
+            meeting_dict['end_dateTime'] = zone.replace(hour=23, minute=59, second=59)
         items.append(meeting_dict)
 
+    mmm = datetime.now().date()
+    meetings2 = resource_obj.events.filter(recurr__isnull=False)
+    filtered_meetings = meetings2.exclude(changed_dates__contains=[mmm])
 
-    meetings2= resource_obj.events.filter(recurr__isnull=False)
-
-
-    for meeting in meetings2:
+    for meeting in filtered_meetings:
         try:
-            if meeting.recurr.between(datetime.now().replace(hour=0,minute=0,second=0,microsecond=0),datetime.now().replace(hour=0,minute=0,second=0,microsecond=0)+timedelta(1),inc=True)[0] !=None :
+            a = datetime.now().date()
+
+            zzz = meeting.recurr.between(datetime.now().replace(hour=0, minute=0, second=0, microsecond=0),
+                                         datetime.now().replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(
+                                             1),
+                                         dtstart=meeting.start_dateTime.astimezone(local_tz).replace(hour=0, minute=0,
+                                                                                                     second=0,
+                                                                                                     microsecond=0,
+                                                                                                     tzinfo=None),
+                                         inc=True)
+
+            if len(zzz) > 0:
                 if meeting.start_dateTime != None:
-                     a = meeting.end_dateTime.time() > datetime.now().time()
+                    a = meeting.end_dateTime.time() > datetime.now().time()
                 else:
                     a = True
                 if a:
@@ -294,7 +309,110 @@ def getMeetingsOfRoomOfaDay(resource_email):
         except Exception as e:
             print(e)
 
+    meetings_dict['items'] = items
+    return meetings_dict
 
+
+def getMeetingsOfRoomOfaDaytest(resource_email):
+    resource_obj = Resources.objects.prefetch_related('events').get(resourceEmail=resource_email)
+    today_date = timezone.datetime.today()
+    try:
+        # meetings = resource_obj.events.filter(Q(end_dateTime__date=today_date,start_dateTime__lte=timezone.now())| Q(end_date__gte=today_date,start_date__lte=today_date)).order_by('start_dateTime')
+        local_tz = pytz.timezone('Asia/Kolkata')
+        dt = timezone.now().astimezone(local_tz).replace(hour=23, minute=59, second=59)
+        a = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
+        meetings = resource_obj.events.exclude(recurr__isnull=False).filter(
+            Q(end_dateTime__gte=a, end_dateTime__lte=dt) | Q(end_dateTime__gte=a,
+                                                             start_dateTime__lte=a) | Q(
+                start_dateTime__gte=a, start_dateTime__lte=dt, end_dateTime__gte=dt) | Q(
+                end_date__gt=today_date, start_date__lte=today_date)).order_by('start_dateTime')
+
+    except Exception as e:
+        print(e)
+
+    meetings_dict = {}
+    items = []
+
+    tz = pytz.timezone('Asia/Kolkata')
+    zone = timezone.now().astimezone(tz)
+
+    for meeting in meetings:
+        meeting_dict = dict()
+        meeting_dict['event_id'] = meeting.event_id
+        meeting_dict['summary'] = meeting.summary
+        if meeting_dict['summary'] == '':
+            meeting_dict['summary'] = 'No title'
+        meeting_dict['description'] = meeting.description
+        if meeting_dict['description'] == '':
+            meeting_dict['description'] = 'No Description'
+        meeting_dict['created'] = meeting.created
+        meeting_dict['updated'] = meeting.updated
+        meeting_dict['attendees'] = meeting.attendees
+        meeting_dict['resources_used'] = meeting.resources_used
+        meeting_dict['start_dateTime'] = meeting.start_dateTime
+        meeting_dict['end_dateTime'] = meeting.end_dateTime
+        meeting_dict['location'] = meeting.location
+        meeting_dict['creator'] = meeting.creator
+        if meeting_dict['start_dateTime'] == None:
+            meeting_dict['start_dateTime'] = zone.replace(hour=00, minute=00, second=00)
+            meeting_dict['end_dateTime'] = zone.replace(hour=23, minute=59, second=59)
+        items.append(meeting_dict)
+
+    mmm = datetime.now().date()
+    meetings2 = resource_obj.events.filter(recurr__isnull=False)
+    filtered_meetings = meetings2.exclude(changed_dates__contains=[mmm])
+
+    for meeting in filtered_meetings:
+        try:
+            a = datetime.now().date()
+
+            zzz = meeting.recurr.between(datetime.now().replace(hour=0, minute=0, second=0, microsecond=0),
+                                         datetime.now().replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(
+                                             1),
+                                         dtstart=meeting.start_dateTime.astimezone(local_tz).replace(hour=0, minute=0,
+                                                                                                     second=0,
+                                                                                                     microsecond=0,
+                                                                                                     tzinfo=None),
+                                         inc=True)
+
+            if len(zzz) > 0:
+                if meeting.start_dateTime != None:
+                    a = meeting.end_dateTime.time() > datetime.now().replace(hour=0, minute=0, second=0,
+                                                                             microsecond=0).time()
+                else:
+                    a = True
+                if a:
+                    meeting_dict = dict()
+                    meeting_dict['event_id'] = meeting.event_id
+                    meeting_dict['summary'] = meeting.summary
+                    if meeting_dict['summary'] == '':
+                        meeting_dict['summary'] = 'No title'
+                    meeting_dict['description'] = meeting.description
+                    if meeting_dict['description'] == '':
+                        meeting_dict['description'] = 'No Description'
+                    meeting_dict['created'] = meeting.created
+                    meeting_dict['updated'] = meeting.updated
+                    meeting_dict['attendees'] = meeting.attendees
+                    meeting_dict['resources_used'] = meeting.resources_used
+                    meeting_dict['start_dateTime'] = meeting.start_dateTime
+                    meeting_dict['end_dateTime'] = meeting.end_dateTime
+                    if meeting_dict['start_dateTime'] == None:
+                        meeting_dict['start_dateTime'] = zone.replace(hour=00, minute=00, second=00)
+                        meeting_dict['end_dateTime'] = zone.replace(hour=23, minute=59, second=59)
+                    else:
+                        time = datetime.now()
+                        meeting_dict['start_dateTime'] = meeting.start_dateTime.replace(year=time.year,
+                                                                                        month=time.month, day=time.day)
+                        meeting_dict['end_dateTime'] = meeting.end_dateTime.replace(year=time.year,
+                                                                                    month=time.month, day=time.day)
+
+                    meeting_dict['location'] = meeting.location
+                    meeting_dict['creator'] = meeting.creator
+                    items.append(meeting_dict)
+
+                    items = sorted(items, key=lambda k: k['start_dateTime'])
+        except Exception as e:
+            print(e)
 
     meetings_dict['items'] = items
     return meetings_dict
@@ -320,7 +438,7 @@ def checkCredentials(data):
 
 def room_details():
     rooms_dictionary = dict()
-    items =[]
+    items = []
 
     rooms = Resources.objects.all()
 
@@ -335,7 +453,6 @@ def room_details():
         room_dictionary['location'] = rooms[i].buildingId
         items.append(room_dictionary)
 
-    rooms_dictionary['items']= items
+    rooms_dictionary['items'] = items
 
     return rooms_dictionary
-
