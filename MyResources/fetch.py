@@ -51,8 +51,8 @@ def room_stats(sDate, eDate, searchQuery):
 
     stats_dict['total_events'] = total_events
     stats_dict['hours'] = round(total_hour, 2)
-    stats_dict['utilization'] = round(stats_dict['hours'] / (resource_present * stats_dict['total_meeting_rooms']),
-                                      2) * 100
+    stats_dict['utilization'] = round(
+        (stats_dict['hours'] / (resource_present * stats_dict['total_meeting_rooms'])) * 100, 2)
 
     combined_dict['room'] = items
     combined_dict['overall'] = stats_dict
@@ -142,14 +142,15 @@ def resource_hours2(resource_email, sDate, eDate):
                 try:
                     recurrences.remove(element)
                 except Exception:
-                    print('element already removed')
+                    1==1
             if element.replace(hour=meeting.start_dateTime.hour, minute=meeting.start_dateTime.minute,
-                               second=meeting.start_dateTime.second,tzinfo=None) >= dateutil.parser.parse(eDate).replace(
-                    tzinfo=None):
+                               second=meeting.start_dateTime.second, tzinfo=None) >= dateutil.parser.parse(
+                eDate).replace(
+                tzinfo=None):
                 try:
                     recurrences.remove(element)
                 except Exception:
-                    print('element already removed')
+                    1==1
 
         diff = meeting.end_dateTime - meeting.start_dateTime
         days_to_hours = diff.days * 24
