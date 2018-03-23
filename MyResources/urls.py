@@ -14,6 +14,7 @@ urlpatterns = [
     path('roomstats',views.RoomStats.as_view()),
     path('getMeetings',views.Meetings.as_view()),
     path('gettodaysMeetingsofroom', views.RoomMeetings.as_view()),
+    path('gettodaysMeetingsofroomtest', views.RoomMeetingsTest.as_view()),
     path('login', views.CheckLogin.as_view()),
     path('register', views.RegisterResourceForNotification.as_view()),
     path('setcredentials',views.GenearteUserNamePassword.as_view()),
