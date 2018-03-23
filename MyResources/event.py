@@ -1,6 +1,10 @@
+import dateutil
 from MyResources.models import Events, Resources
+import pytz
+import dateutil.parser
 
-def insertEvent(resource_email,eventobject):
+
+def insertEvent(resource_email, eventobject):
     if Events.objects.filter(event_id=eventobject['id']).exists():
         obj = Events.objects.get(event_id=eventobject['id'])
         resources_present_list = obj.resources_used
@@ -15,6 +19,15 @@ def insertEvent(resource_email,eventobject):
     # check if no attendees field
     if eventobject.get('attendees', None) is None:
         eventobject['attendees'] = []
+
+    if eventobject.get('start', {}).get('dateTime', None) is None:
+        local_tz = pytz.timezone('Asia/Kolkata')
+        sDate = eventobject.get('start', {}).get('date', None)
+        eDate = eventobject.get('end', {}).get('date', None)
+        eventobject['start']['dateTime'] = str(
+            dateutil.parser.parse(sDate).astimezone(local_tz).replace(hour=00, minute=00, second=00))
+        eventobject['end']['dateTime'] = str(
+            dateutil.parser.parse(eDate).astimezone(local_tz).replace(hour=00, minute=00, second=00))
 
     for i in range(len(eventobject['attendees'])):
         if not (eventobject['attendees'][i].get('resource')):
