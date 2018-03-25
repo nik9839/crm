@@ -5,7 +5,7 @@ from MyResources.models import Events, Resources
 from datetime import datetime, timedelta
 from django.utils import timezone
 import pytz
-import jwt
+import jwt,copy
 from pg_utils import Seconds
 import dateutil.parser
 
@@ -135,7 +135,8 @@ def resource_hours2(resource_email, sDate, eDate):
             dtstart=meeting.start_dateTime.astimezone(local_tz).replace(hour=0, minute=0, second=0, microsecond=0,
                                                                         tzinfo=None),
             inc=True)
-        for element in recurrences:
+        temp_recurrences = copy.deepcopy(recurrences)
+        for element in temp_recurrences:
             if element.date() in meeting.changed_dates:
                 recurrences.remove(element)
             if element < dateutil.parser.parse(sDate).replace(tzinfo=None):
