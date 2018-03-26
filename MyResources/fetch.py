@@ -36,15 +36,16 @@ def room_stats(sDate, eDate, searchQuery):
     resource_present = resource_present_hours(sDate, eDate)
     for i in range(resource_objects.count()):
         room_dict = dict()
+        room_dict['row_id'] = i+1
         room_dict['email'] = resource_objects[i].resourceEmail
         room_dict['room_name'] = resource_objects[i].resourceName
         room_dict['calender_name'] = resource_objects[i].generatedResourceName
         room_dict['location'] = resource_objects[i].buildingId
         room_dict['capacity'] = resource_objects[i].capacity
         room_dict['hours'], room_dict['meetings'] = resource_hours2(resource_objects[i].resourceEmail, sDate, eDate)
-        room_dict['utilization'] = str(round((room_dict['hours'] / resource_present) * 100))
+        room_dict['utilization'] = round((room_dict['hours'] / resource_present) * 100)
         room_dict['floor'] = resource_objects[i].floorName
-        room_dict['space_utilization'] = resource_space_utilzation(sDate, eDate, resource_objects[i].resourceEmail)
+        #room_dict['space_utilization'] = resource_space_utilzation(sDate, eDate, resource_objects[i].resourceEmail)
         items.append(room_dict)
         total_hour = total_hour + room_dict['hours']
         total_events = total_events + room_dict['meetings']
