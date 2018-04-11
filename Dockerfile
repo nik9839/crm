@@ -18,4 +18,4 @@ COPY . /usr/src/app
 
 EXPOSE 8000
 
-CMD uwsgi --ini uwsgi.ini
+CMD NEW_RELIC_CONFIG_FILE=newrelic.ini newrelic-admin run-program uwsgi --ini uwsgi.ini
