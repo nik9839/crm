@@ -170,6 +170,7 @@ class AddEvent(APIView):
         return Response('ok')
 
 
+
 @api_view(['GET', 'POST'])
 def getchanges(request):
     for obj in Resources.objects.filter(Q(generatedResourceName__icontains='Noida')):
