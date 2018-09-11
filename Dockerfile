@@ -16,7 +16,6 @@ RUN pip install -r requirements/requirements.txt
 COPY client_secret.json /usr/src/app/
 COPY . /usr/src/app
 
-
 EXPOSE 8000
 
 CMD NEW_RELIC_CONFIG_FILE=newrelic.ini newrelic-admin run-program uwsgi --ini uwsgi.ini

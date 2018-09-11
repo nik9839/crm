@@ -162,6 +162,8 @@ class AddEvent(APIView):
     def post(self, request):
         for event in request.data['items']:
             try:
+                if event['status'] == "cancelled":
+                    deleteEvent2()
                 insertEvent('', event)
             except Exception as e:
                 print(e)
@@ -173,4 +175,3 @@ def getchanges(request):
     for obj in Resources.objects.filter(Q(generatedResourceName__icontains='Noida')):
         get_changes(obj.resourceEmail)
     return Response('ok')
-
