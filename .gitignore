@@ -179,9 +179,3 @@ __pycache__/
 local_settings.py
 db.sqlite3
 media
-
-
-# not pushing to git
-client_secret.json
-
-crm/production.py
