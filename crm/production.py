@@ -147,7 +147,7 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-GOOGLE_PUSH_NOTIFICATION_CALLBACK_URL = 'https://conference.veris.in/MyResources/watch'
+GOOGLE_PUSH_NOTIFICATION_CALLBACK_URL = 'https://crm.veris.in/MyResources/watch'
 
 RAVEN_CONFIG = {
     'dsn': 'https://a88b48d64d9e4cfbb0a5559aa561abbe:458f26d050c746c08424c087d26f6761@sentry.io/294557',
