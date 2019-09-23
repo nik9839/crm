@@ -7,6 +7,7 @@ pipeline {
                anyOf {
                     branch "master"
                     branch "develop"
+                    branch "crm_demo"
                }
            }
            steps {
