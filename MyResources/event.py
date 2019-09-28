@@ -1,7 +1,8 @@
 import dateutil
-from MyResources.models import Events, Resources
-import pytz
 import dateutil.parser
+import pytz
+
+from MyResources.models import Events, Resources
 
 
 def insertEvent(resource_email, eventobject):
@@ -75,13 +76,38 @@ def deleteEvent2(resource_email, eventobject):
         event.save()
         return 'deleted'
 
-    if eventobject.get('recurringEventId',None) is not None:
+    if eventobject.get('recurringEventId', None) is not None:
         parent = Events.objects.get(event_id=eventobject.get('recurringEventId'))
         if eventobject.get('originalStartTime', {}).get('dateTime', None) is None:
             parent.changed_dates.append(eventobject.get('originalStartTime', {}).get('date', None))
         else:
             tz = pytz.timezone('Asia/Kolkata')
             parent.changed_dates.append(
-                dateutil.parser.parse(eventobject.get('originalStartTime', {}).get('dateTime', None)).astimezone(tz).date())
+                dateutil.parser.parse(eventobject.get('originalStartTime', {}).get('dateTime', None)).astimezone(
+                    tz).date())
         parent.save()
 
+
+def delete_event(eventobject):
+    if Events.objects.filter(event_id=eventobject['id']).exists():
+        event = Events.objects.get(event_id=eventobject['id'])
+        resources_used = event.resources_used
+
+        for resource in resources_used:
+            Resources.objects.get(resourceEmail=resource).events.remove(event)
+
+        event.resources_used = []
+        event.status = eventobject['status']
+        event.save()
+        return 'deleted'
+
+    if eventobject.get('recurringEventId', None) is not None:
+        parent = Events.objects.get(event_id=eventobject.get('recurringEventId'))
+        if eventobject.get('originalStartTime', {}).get('dateTime', None) is None:
+            parent.changed_dates.append(eventobject.get('originalStartTime', {}).get('date', None))
+        else:
+            tz = pytz.timezone('Asia/Kolkata')
+            parent.changed_dates.append(
+                dateutil.parser.parse(eventobject.get('originalStartTime', {}).get('dateTime', None)).astimezone(
+                    tz).date())
+        parent.save()

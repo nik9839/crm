@@ -4,6 +4,8 @@ from rest_framework.decorators import api_view
 from rest_framework.status import *
 from rest_framework.views import APIView
 from rest_framework.response import Response
+
+from MyResources.event import delete_event
 from MyResources.resources import insertResource
 from MyResources.fetchCalenderData import *
 from MyResources.fetch import *
@@ -163,7 +165,7 @@ class AddEvent(APIView):
         for event in request.data['items']:
             try:
                 if event['status'] == "cancelled":
-                    deleteEvent2()
+                    delete_event(event)
                 insertEvent('', event)
             except Exception as e:
                 print(e)
