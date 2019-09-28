@@ -42,7 +42,7 @@ def insertEvent(resource_email, eventobject):
                    end_dateTime=eventobject.get('end', {}).get('dateTime', None),
                    location=eventobject.get('location', None),
                    event_dump=eventobject, attendees=attendees_list, resources_used=resources_used_list,
-                   creator=eventobject.get('creator', {}).get('email', None),
+                   creator=eventobject.get('organizer', {}).get('email', None),
                    start_date=eventobject.get('start', {}).get('date', None),
                    end_date=eventobject.get('end', {}).get('date', None),
                    recurr=eventobject.get('recurrence', [None])[0], status=eventobject.get('status'))
