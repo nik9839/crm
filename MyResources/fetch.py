@@ -433,6 +433,7 @@ def checkCredentials(data):
             response['room_name'] = resource.resourceName
             response['room_url'] = resource.roomUrl
             response['token'] = jwt.encode({'email': resource.resourceEmail}, 'secret', algorithm='HS256')
+            response['amenities'] = resource.amenities
         else:
             response['message'] = "password doesn't match"
     else:

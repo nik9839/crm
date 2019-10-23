@@ -45,6 +45,7 @@ class Resources(models.Model):
     roomPassword = models.CharField(max_length=20,blank=True)
     roomUrl = models.URLField(blank=True)
     syncToken = models.CharField(max_length=40,blank=True)
+    amenities = JSONField(null=True, blank=True, default=None)
 
 
 

@@ -21,7 +21,7 @@ def insertResource(self,resourceObject):
                          generatedResourceName=resourceObject['generatedResourceName'],resourceType=resourceObject['resourceType'],
                          capacity=resourceObject['capacity'],resourceCategory=resourceObject['resourceCategory'],
                          buildingId=resourceObject['buildingId'],floorName=resourceObject['floorName'], resourceDumpdata=resourceObject,
-                         resourceUUID= uuid.uuid4(), resourceName=resourceObject['resourceName'])
+                         resourceUUID= uuid.uuid4(), resourceName=resourceObject['resourceName'], amenities=resourceObject['amenities'])
     resource.save()
 
     register_resource(resourceObject['resourceEmail'])
