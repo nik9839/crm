@@ -95,8 +95,11 @@ def delete_event(eventobject):
         event = Events.objects.get(event_id=eventobject['id'])
         resources_used = event.resources_used
 
-        for resource in resources_used:
-            Resources.objects.get(resourceEmail=resource).events.remove(event)
+        try:
+            for resource in resources_used:
+                Resources.objects.get(resourceEmail=resource).events.remove(event)
+        except Exception as e:
+            print(e)
 
         event.resources_used = []
         event.status = eventobject['status']
