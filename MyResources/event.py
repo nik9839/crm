@@ -62,8 +62,10 @@ def insertEvent(resource_email, eventobject):
 
     for j in range(len(resources_used_list)):
         resource = Resources.objects.get(resourceEmail=resources_used_list[j])
-        resource.events.add(event)
-        resource.save()
+        event_exist = check_if_event_exist_for_that_time(resource, event)
+        if not event_exist:
+            resource.events.add(event)
+            resource.save()
 
 
 def deleteEvent2(resource_email, eventobject):
@@ -111,3 +113,50 @@ def delete_event(eventobject):
                 dateutil.parser.parse(eventobject.get('originalStartTime', {}).get('dateTime', None)).astimezone(
                     tz).date())
         parent.save()
+
+
+def check_if_event_exist_for_that_time(resource, event):
+    from django.db.models import Q
+    event_start = event.start_dateTime
+    event_end = event.end_dateTime
+
+    meetings_normal = 0
+    meetings_recurr = 0
+    try:
+        meetings_normal = resource.events.exclude(recurr__isnull=False).filter(
+            Q(end_dateTime__gte=event_start, end_dateTime__lte=event_end) | Q(end_dateTime__gte=event_start,
+                                                                              start_dateTime__lte=event_start) | Q(
+                start_dateTime__gte=event_start, start_dateTime__lte=event_end, end_dateTime__gte=event_end)).count()
+    except Exception as e:
+        print(e)
+
+
+    try:
+        mmm = event_start.date()
+        local_tz = pytz.timezone('Asia/Kolkata')
+        meetings_recurr = resource.events.filter(recurr__isnull=False)
+        filtered_meetings = meetings_recurr.exclude(changed_dates__contains=[mmm])
+        for meeting in filtered_meetings:
+            zzz = meeting.recurr.between(event_start, event_end,
+                                         dtstart=meeting.start_dateTime.astimezone(local_tz).replace(hour=0, minute=0,
+                                                                                                     second=0,
+                                                                                                     microsecond=0,
+                                                                                                     tzinfo=None),
+                                         inc=True)
+            if len(zzz) > 0:
+                if meeting.start_dateTime != None:
+                    a = meeting.end_dateTime.time() > event_start.time()
+                else:
+                    a = True
+                if a:
+                    meetings_recurr = 1
+                    break
+    except Exception as e:
+        print(e)
+
+    total_meetings = meetings_normal + meetings_recurr
+    print(total_meetings)
+    if total_meetings:
+        return True
+    else:
+        return False
