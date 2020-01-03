@@ -127,12 +127,11 @@ def check_if_event_exist_for_that_time(resource, event):
     meetings_recurr = 0
     try:
         meetings_normal = resource.events.exclude(recurr__isnull=False).filter(
-            Q(end_dateTime__gte=event_start, end_dateTime__lte=event_end) | Q(end_dateTime__gte=event_start,
-                                                                              start_dateTime__lte=event_start) | Q(
-                start_dateTime__gte=event_start, start_dateTime__lte=event_end, end_dateTime__gte=event_end)).count()
+            Q(end_dateTime__gt=event_start, end_dateTime__lt=event_end) | Q(end_dateTime__gt=event_start,
+                                                                            start_dateTime__lt=event_start) | Q(
+                start_dateTime__gt=event_start, start_dateTime__lt=event_end, end_dateTime__gt=event_end)).count()
     except Exception as e:
         print(e)
-
 
     try:
         mmm = event_start.date()
